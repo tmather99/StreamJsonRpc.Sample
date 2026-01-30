@@ -9,7 +9,7 @@ using StreamJsonRpc;
 
 class Program
 {
-    static bool useStdIo = true;
+    static bool useStdIo = false;
 
     static async Task Main()
     {
