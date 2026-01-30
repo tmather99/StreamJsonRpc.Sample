@@ -50,7 +50,7 @@ class Program
         const string Config = "Release";
 #endif
         return Path.Combine(
-            Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
-            $@"..\..\..\..\StreamJsonRpc.Sample.Server\bin\{Config}\netcoreapp3.1\StreamJsonRpc.Sample.Server.exe");
+            Path.GetDirectoryName(System.AppContext.BaseDirectory),
+            $@"..\..\..\..\StreamJsonRpc.Sample.Server\bin\{Config}\net10.0\StreamJsonRpc.Sample.Server.exe");
     }
 }

@@ -36,7 +36,7 @@ namespace StreamJsonRpc.Sample.WebSocketClient
             Console.WriteLine("Connecting to web socket...");
             using (var socket = new ClientWebSocket())
             {
-                await socket.ConnectAsync(new Uri("wss://localhost:44392/socket"), cancellationToken);
+                await socket.ConnectAsync(new Uri("wss://localhost:5001/socket"), cancellationToken);
                 Console.WriteLine("Connected to web socket. Establishing JSON-RPC protocol...");
                 using (var jsonRpc = new JsonRpc(new WebSocketMessageHandler(socket)))
                 {

@@ -20,6 +20,7 @@ namespace StreamJsonRpc.Sample.Web.Controllers
             {
                 await Task.Delay(1000, cancellationToken);
                 this.Tick?.Invoke(this, ++tickNumber);
+                Console.WriteLine($"Tock {tickNumber}");
             }
         }
     }
