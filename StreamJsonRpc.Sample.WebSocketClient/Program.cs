@@ -15,9 +15,9 @@ namespace StreamJsonRpc.Sample.WebSocketClient
             var cts = new CancellationTokenSource();
             Console.CancelKeyPress += (s, e) =>
             {
-                Console.WriteLine("Canceling...");
                 cts.Cancel();
                 e.Cancel = true;
+                Console.WriteLine("Canceling...");
             };
 
             try
@@ -28,6 +28,11 @@ namespace StreamJsonRpc.Sample.WebSocketClient
             catch (OperationCanceledException)
             {
                 // This is the normal way we close.
+                Console.WriteLine("Operation canceled.");
+            }
+            finally
+            {
+                Console.WriteLine("finally!");
             }
         }
 
@@ -36,25 +41,29 @@ namespace StreamJsonRpc.Sample.WebSocketClient
             Console.WriteLine("Connecting to web socket...");
             using (var socket = new ClientWebSocket())
             {
+                Guid guid = Guid.NewGuid();
+
                 await socket.ConnectAsync(new Uri("wss://localhost:5001/socket"), cancellationToken);
                 Console.WriteLine("Connected to web socket. Establishing JSON-RPC protocol...");
                 using (var jsonRpc = new JsonRpc(new WebSocketMessageHandler(socket)))
                 {
                     try
                     {
-                        jsonRpc.AddLocalRpcMethod("Tick", new Action<int>(tick => Console.WriteLine($"Tick {tick}!")));
+                        jsonRpc.AddLocalRpcMethod("Tick", TickHandler(guid));
                         jsonRpc.StartListening();
+
                         Console.WriteLine("JSON-RPC protocol over web socket established.");
                         int result = await jsonRpc.InvokeWithCancellationAsync<int>("Add", new object[] { 1, 2 }, cancellationToken);
                         Console.WriteLine($"JSON-RPC server says 1 + 2 = {result}");
-
+                        
                         // Request notifications from the server.
-                        await jsonRpc.NotifyAsync("SendTicksAsync");
-
+                        await jsonRpc.NotifyAsync("SendTicksAsync", guid);
                         await jsonRpc.Completion.WithCancellation(cancellationToken);
                     }
                     catch (OperationCanceledException)
                     {
+                        await jsonRpc.InvokeAsync("CancelTickOperation", guid);
+
                         // Closing is initiated by Ctrl+C on the client.
                         // Close the web socket gracefully -- before JsonRpc is disposed to avoid the socket going into an aborted state.
                         await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Client closing", CancellationToken.None);
@@ -62,6 +71,11 @@ namespace StreamJsonRpc.Sample.WebSocketClient
                     }
                 }
             }
-        }
+
+            Action<int> TickHandler(Guid guid)
+            {
+                return new Action<int>(tick => Console.WriteLine($"Tick {guid} - {tick}!"));
+            }
+        }   
     }
 }

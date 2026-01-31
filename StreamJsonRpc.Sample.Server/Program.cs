@@ -39,6 +39,6 @@ class Program
         var jsonRpc = JsonRpc.Attach(stream, new Server());
         await Console.Error.WriteLineAsync($"JSON-RPC listener attached to #{clientId}. Waiting for requests...");
         await jsonRpc.Completion;
-        await Console.Error.WriteLineAsync($"Connection #{clientId} terminated.");
+        await Console.Error.WriteLineAsync($"Connection #{clientId} terminated.\n");
     }
 }

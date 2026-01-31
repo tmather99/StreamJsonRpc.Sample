@@ -11,16 +11,24 @@ namespace StreamJsonRpc.Sample.Web.Controllers
         /// </summary>
         public event EventHandler<int> Tick;
 
+        public bool isCancel = false;
+
         public int Add(int a, int b) => a + b;
 
-        public async Task SendTicksAsync(CancellationToken cancellationToken)
+        public void CancelTickOperation(Guid guid)
+        {
+            isCancel = true;
+            Console.WriteLine($"Cancel Tick Operation for {guid}");
+        }
+
+        public async Task SendTicksAsync(Guid guid, CancellationToken cancellationToken)
         {
             int tickNumber = 0;
-            while (!cancellationToken.IsCancellationRequested)
+            while (!this.isCancel && !cancellationToken.IsCancellationRequested)
             {
                 await Task.Delay(1000, cancellationToken);
                 this.Tick?.Invoke(this, ++tickNumber);
-                Console.WriteLine($"Tock {tickNumber}");
+                Console.WriteLine($"{guid} - {tickNumber}");
             }
         }
     }

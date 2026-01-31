@@ -2,8 +2,6 @@
 
 	<PropertyGroup>
 		<TargetFramework>net10.0</TargetFramework>
-		<PublishAot>false</PublishAot>
-		<NoWarn>$(NoWarn);IL2026;IL3050</NoWarn>
 	</PropertyGroup>
 
 	<ItemGroup>
