@@ -13,7 +13,12 @@ namespace StreamJsonRpc.Sample.Web.Controllers
 
         public bool isCancel = false;
 
-        public int Add(int a, int b) => a + b;
+        public int Add(int a, int b)
+        {
+            int result = a + b;
+            Console.WriteLine($"  Adding {a} + {b} = {result}");
+            return result;
+        }
 
         public void CancelTickOperation(Guid guid)
         {
@@ -28,7 +33,7 @@ namespace StreamJsonRpc.Sample.Web.Controllers
             {
                 await Task.Delay(1000, cancellationToken);
                 this.Tick?.Invoke(this, ++tickNumber);
-                Console.WriteLine($"{guid} - {tickNumber}");
+                Console.WriteLine($"{guid} - #{tickNumber}");
             }
         }
     }

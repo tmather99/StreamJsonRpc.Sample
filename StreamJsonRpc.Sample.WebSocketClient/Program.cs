@@ -47,11 +47,11 @@ namespace StreamJsonRpc.Sample.WebSocketClient
                 {
                     try
                     {
-                        jsonRpc.AddLocalRpcMethod("Tick", TickHandler(guid));
+                        jsonRpc.AddLocalRpcMethod("Tick", TickHandler(guid, jsonRpc));
                         jsonRpc.StartListening();
 
                         Console.WriteLine("JSON-RPC protocol over web socket established.");
-                        int result = await jsonRpc.InvokeWithCancellationAsync<int>("Add", new object[] { 1, 2 }, cancellationToken);
+                        int result = await jsonRpc.InvokeWithCancellationAsync<int>("Add", [1, 2], cancellationToken);
                         Console.WriteLine($"JSON-RPC server says 1 + 2 = {result}");
                         
                         // Request notifications from the server.
@@ -70,9 +70,21 @@ namespace StreamJsonRpc.Sample.WebSocketClient
                 }
             }
 
-            Action<int> TickHandler(Guid guid)
+            Func<int, Task> TickHandler(Guid guid, JsonRpc jsonRpc)
             {
-                return new Action<int>(tick => Console.WriteLine($"Tick {guid} - {tick}!"));
+                return async tick =>
+                {
+                    Console.WriteLine($"  Tick {guid} - #{tick}");
+
+                    int i = Random.Shared.Next(0, 10);
+                    int j = Random.Shared.Next(0, 10);
+
+                    int result = await jsonRpc.InvokeWithCancellationAsync<int>("Add", [i, j], cancellationToken);
+                    Console.WriteLine($"JSON-RPC server says {i} + {j} = {result}");
+
+                    // example async work
+                    await jsonRpc.NotifyAsync("tick", new { guid, tick });
+                };
             }
         }   
     }
