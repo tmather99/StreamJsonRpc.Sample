@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 
 #pragma warning disable VSTHRD200
@@ -19,6 +21,16 @@ namespace StreamJsonRpc.Sample.Web.Controllers
                     jsonRpc.CancelLocallyInvokedMethodsWhenConnectionIsClosed = true;
                     jsonRpc.StartListening();
                     await jsonRpc.Completion;
+
+                    jsonRpc.Disconnected += async delegate (object o, JsonRpcDisconnectedEventArgs e)
+                    {
+                        Console.WriteLine("\nRPC connection closed");
+                        Console.WriteLine($"  Reason: {e.Reason}");
+                        Console.WriteLine($"  Description: {e.Description}");
+                        if (e.Exception != null)
+                            Console.WriteLine($"  Exception: {e.Exception}");
+                       
+                    };
                 }
 
                 return new EmptyResult();

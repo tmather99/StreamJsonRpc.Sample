@@ -20,6 +20,13 @@ namespace StreamJsonRpc.Sample.Web.Controllers
             return result;
         }
 
+        public Task<int> AddAsync(int a, int b)
+        {
+            int result = a + b;
+            Console.WriteLine($"  AddAsync {a} + {b} = {result}");
+            return Task.FromResult(result);
+        }
+
         public void CancelTickOperation(Guid guid)
         {
             isCancel = true;
@@ -32,8 +39,12 @@ namespace StreamJsonRpc.Sample.Web.Controllers
             while (!this.isCancel && !cancellationToken.IsCancellationRequested)
             {
                 await Task.Delay(1000, cancellationToken);
-                this.Tick?.Invoke(this, ++tickNumber);
-                Console.WriteLine($"{guid} - #{tickNumber}");
+
+                if (!isCancel)
+                {
+                    this.Tick?.Invoke(this, ++tickNumber);
+                    Console.WriteLine($"Request from {guid} - #{tickNumber}");
+                }
             }
         }
     }

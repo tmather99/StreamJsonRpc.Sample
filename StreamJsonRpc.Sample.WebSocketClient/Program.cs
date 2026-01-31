@@ -79,7 +79,7 @@ namespace StreamJsonRpc.Sample.WebSocketClient
                     int i = Random.Shared.Next(0, 10);
                     int j = Random.Shared.Next(0, 10);
 
-                    int result = await jsonRpc.InvokeWithCancellationAsync<int>("Add", [i, j], cancellationToken);
+                    int result = await jsonRpc.InvokeWithCancellationAsync<int>("AddAsync", [i, j], cancellationToken);
                     Console.WriteLine($"JSON-RPC server says {i} + {j} = {result}");
 
                     // example async work
