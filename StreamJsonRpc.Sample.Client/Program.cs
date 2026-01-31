@@ -2,7 +2,6 @@
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
-using System.Reflection;
 using System.Threading.Tasks;
 using Nerdbank.Streams;
 using StreamJsonRpc;

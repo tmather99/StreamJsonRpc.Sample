@@ -1,10 +1,8 @@
-﻿using Microsoft.VisualStudio.Threading;
-using System;
-using System.Diagnostics;
-using System.Net.Http;
+﻿using System;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.Threading;
 
 namespace StreamJsonRpc.Sample.WebSocketClient
 {
