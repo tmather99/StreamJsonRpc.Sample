@@ -1,27 +1,31 @@
 ﻿using System.IO.Pipes;
 using StreamJsonRpc;
 
-Console.WriteLine("Connecting to server...");
-using NamedPipeClientStream stream = new(serverName:".",
-                                         "StreamJsonRpcSamplePipe",
-                                         PipeDirection.InOut,
-                                         PipeOptions.Asynchronous);
+Guid guid = Guid.NewGuid();
+
+string pipeName = "Satori";
+Console.WriteLine($"Connecting to {pipeName}...");
+using NamedPipeClientStream stream = new(serverName:".", pipeName, PipeDirection.InOut, PipeOptions.Asynchronous);
 await stream.ConnectAsync();
-await RunAsync(stream);
+await RunAsync(stream, guid);
 
-static async Task RunAsync(NamedPipeClientStream pipe)
+Console.WriteLine("Terminating stream...");
+
+static async Task RunAsync(NamedPipeClientStream pipe, Guid guid)
 {
-    // https://microsoft.github.io/vs-streamjsonrpc/docs/extensibility.html
-    //JsonRpc jsonRpc = new(new LengthHeaderMessageHandler(sendingStream: pipe,receivingStream: pipe,NerdbankMessagePack.CreateFormatter()));
-
-    JsonRpc jsonRpc = new(new HeaderDelimitedMessageHandler(duplexStream: pipe, SystemTextJson.CreateFormatter()));
-
+    HeaderDelimitedMessageHandler messageHandler = new(pipe, SystemTextJson.CreateFormatter());
+    JsonRpc jsonRpc = new(messageHandler);
     IServer proxy = jsonRpc.Attach<IServer>();
     jsonRpc.StartListening();
 
-    int i = Random.Shared.Next(0, 10);
-    int j = Random.Shared.Next(0, 10);
-    int sum = await proxy.AddAsync(i, j);
-    Console.WriteLine($"{i} + {j} = {sum}");
-    Console.WriteLine("Terminating stream...");
+    Console.WriteLine($"  ClientId: {guid}");
+    bool connected = await jsonRpc.InvokeAsync<bool>("ConnectAsync", guid);
+
+    if (connected)
+    {
+        int i = Random.Shared.Next(0, 10);
+        int j = Random.Shared.Next(0, 10);
+        int sum = await proxy.AddAsync(i, j);
+        Console.WriteLine($"  Calculating {i} + {j} = {sum}");
+    }
 }

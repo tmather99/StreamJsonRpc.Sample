@@ -17,7 +17,6 @@
 
 	<ItemGroup>
 	  <Compile Include="..\StreamJsonRpc.Aot.Server\IServer.cs" Link="IServer.cs" />
-	  <Compile Include="..\StreamJsonRpc.Aot.Server\NerdbankMessagePack.cs" Link="NerdbankMessagePack.cs" />
 	  <Compile Include="..\StreamJsonRpc.Aot.Server\SystemTextJson.cs" Link="SystemTextJson.cs" />
 	</ItemGroup>
 

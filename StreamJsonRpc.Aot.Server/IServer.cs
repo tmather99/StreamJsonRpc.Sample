@@ -5,5 +5,6 @@ using StreamJsonRpc;
 [JsonRpcContract, GenerateShape(IncludeMethods = MethodShapeFlags.PublicInstance)]
 internal partial interface IServer
 {
+    Task<bool> ConnectAsync(Guid guid);
     Task<int> AddAsync(int a, int b);
 }
