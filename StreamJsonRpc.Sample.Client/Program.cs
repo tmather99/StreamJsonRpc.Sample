@@ -36,9 +36,11 @@ class Program
     private static async Task ActAsRpcClientAsync(Stream stream)
     {
         Console.WriteLine("Connected. Sending request...");
-        using var jsonRpc = JsonRpc.Attach(stream);
-        int sum = await jsonRpc.InvokeAsync<int>("Add", 3, 5);
-        Console.WriteLine($"3 + 5 = {sum}");
+        using (var jsonRpc = JsonRpc.Attach(stream))
+        {
+            int sum = await jsonRpc.InvokeAsync<int>("Add", 3, 5);
+            Console.WriteLine($"3 + 5 = {sum}");
+        }
     }
 
     private static string FindPathToServer()

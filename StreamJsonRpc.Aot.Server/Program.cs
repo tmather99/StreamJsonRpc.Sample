@@ -14,17 +14,21 @@ while (true)
     await RunAsync(stream, ++clientId);
 }
 
-static async Task RunAsync(NamedPipeServerStream serverPipe, int clientId)
+static async Task RunAsync(NamedPipeServerStream pipe, int clientId)
 {
-    //JsonRpc serverRpc = new(new HeaderDelimitedMessageHandler(serverPipe, SystemTextJson.CreateFormatter()));
-    JsonRpc serverRpc = new(new LengthHeaderMessageHandler(serverPipe, serverPipe, NerdbankMessagePack.CreateFormatter()));
+
+    // https://microsoft.github.io/vs-streamjsonrpc/docs/extensibility.html
+    //JsonRpc jsonRpc = new(new LengthHeaderMessageHandler(sendingStream: pipe, receivingStream: pipe, NerdbankMessagePack.CreateFormatter()));
+
+    JsonRpc jsonRpc = new(new HeaderDelimitedMessageHandler(duplexStream:pipe, SystemTextJson.CreateFormatter()));
+
     RpcTargetMetadata targetMetadata = RpcTargetMetadata.FromShape<IServer>();
-    serverRpc.AddLocalRpcTarget(targetMetadata, new Server(), null);
-    serverRpc.StartListening();
+    jsonRpc.AddLocalRpcTarget(targetMetadata, new Server(), null);
+    jsonRpc.StartListening();
 
     await Console.Error.WriteLineAsync($"Connection request #{clientId} received. Spinning off an async Task to cater to requests.");
     await Console.Error.WriteLineAsync($"JSON-RPC listener attached to #{clientId}. Waiting for requests...");
-    await serverRpc.Completion;
+    await jsonRpc.Completion;
     await Console.Error.WriteLineAsync($"Connection #{clientId} terminated.\n");
 }
 

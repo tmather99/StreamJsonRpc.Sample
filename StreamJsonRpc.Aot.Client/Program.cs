@@ -9,12 +9,15 @@ using NamedPipeClientStream stream = new(serverName:".",
 await stream.ConnectAsync();
 await RunAsync(stream);
 
-static async Task RunAsync(NamedPipeClientStream clientPipe)
+static async Task RunAsync(NamedPipeClientStream pipe)
 {
-    //JsonRpc clientRpc = new(new HeaderDelimitedMessageHandler(clientPipe, SystemTextJson.CreateFormatter()));
-    JsonRpc clientRpc = new(new LengthHeaderMessageHandler(clientPipe, clientPipe, NerdbankMessagePack.CreateFormatter()));
-    IServer proxy = clientRpc.Attach<IServer>();
-    clientRpc.StartListening();
+    // https://microsoft.github.io/vs-streamjsonrpc/docs/extensibility.html
+    //JsonRpc jsonRpc = new(new LengthHeaderMessageHandler(sendingStream: pipe,receivingStream: pipe,NerdbankMessagePack.CreateFormatter()));
+
+    JsonRpc jsonRpc = new(new HeaderDelimitedMessageHandler(duplexStream: pipe, SystemTextJson.CreateFormatter()));
+
+    IServer proxy = jsonRpc.Attach<IServer>();
+    jsonRpc.StartListening();
 
     int i = Random.Shared.Next(0, 10);
     int j = Random.Shared.Next(0, 10);
