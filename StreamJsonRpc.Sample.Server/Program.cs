@@ -30,7 +30,7 @@ class Program
             var stream = new NamedPipeServerStream("StreamJsonRpcSamplePipe", PipeDirection.InOut, 
                 NamedPipeServerStream.MaxAllowedServerInstances, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
             await stream.WaitForConnectionAsync();
-            Task nowait = RespondToRpcRequestsAsync(stream, ++clientId);
+            await RespondToRpcRequestsAsync(stream, ++clientId);
         }
     }
 
