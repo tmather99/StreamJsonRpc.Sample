@@ -27,7 +27,8 @@ class Program
         while (true)
         {
             await Console.Error.WriteLineAsync("Waiting for client to make a connection...");
-            var stream = new NamedPipeServerStream("StreamJsonRpcSamplePipe", PipeDirection.InOut, NamedPipeServerStream.MaxAllowedServerInstances, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
+            var stream = new NamedPipeServerStream("StreamJsonRpcSamplePipe", PipeDirection.InOut, 
+                NamedPipeServerStream.MaxAllowedServerInstances, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
             await stream.WaitForConnectionAsync();
             Task nowait = RespondToRpcRequestsAsync(stream, ++clientId);
         }

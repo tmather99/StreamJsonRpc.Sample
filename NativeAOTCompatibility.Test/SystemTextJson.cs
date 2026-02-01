@@ -18,8 +18,8 @@ internal static partial class SystemTextJson
 
         var targetMetadata = RpcTargetMetadata.FromShape<IServer>();
         serverRpc.AddLocalRpcTarget(targetMetadata, new Server(), null);
-
         serverRpc.StartListening();
+        
         IServer proxy = clientRpc.Attach<IServer>();
         clientRpc.StartListening();
 
