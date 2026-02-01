@@ -22,7 +22,7 @@ static async Task RunAsync(NamedPipeClientStream pipe, Guid guid)
     jsonRpc.StartListening();
 
     Console.WriteLine($"  ClientId: {guid}");
-    bool connected = await jsonRpc.InvokeAsync<bool>("ConnectAsync", guid);
+    bool connected = await proxy.ConnectAsync(guid);
 
     if (connected)
     {
