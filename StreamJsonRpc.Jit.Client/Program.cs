@@ -12,7 +12,10 @@ class Program
     {
         string pipeName = "Satori";
         Console.WriteLine($"Connecting to {pipeName}...");
-        using (var stream = new NamedPipeClientStream(serverName: ".", pipeName, PipeDirection.InOut, PipeOptions.Asynchronous))
+        using (var stream = new NamedPipeClientStream(serverName: ".",
+                                                      pipeName, 
+                                                      PipeDirection.InOut,
+                                                      PipeOptions.Asynchronous))
         {
             await stream.ConnectAsync();
             await RunAsync(stream);

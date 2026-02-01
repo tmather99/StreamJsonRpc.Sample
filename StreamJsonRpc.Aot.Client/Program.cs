@@ -5,7 +5,10 @@ Guid guid = Guid.NewGuid();
 
 string pipeName = "Satori";
 Console.WriteLine($"Connecting to {pipeName}...");
-using NamedPipeClientStream stream = new(serverName:".", pipeName, PipeDirection.InOut, PipeOptions.Asynchronous);
+using NamedPipeClientStream stream = new(serverName:".",
+                                         pipeName,
+                                         PipeDirection.InOut,
+                                         PipeOptions.Asynchronous);
 await stream.ConnectAsync();
 await RunAsync(stream, guid);
 
