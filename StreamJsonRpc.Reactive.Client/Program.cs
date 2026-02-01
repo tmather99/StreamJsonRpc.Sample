@@ -12,8 +12,6 @@ class CounterObserver : IObserver<int>
 
 class Program
 {
-    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Using the Json source generator.")]
-    [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "Using the Json source generator.")]
     static async Task Main()
     {
         var pipe = new NamedPipeClientStream(".", "rpcpipe",

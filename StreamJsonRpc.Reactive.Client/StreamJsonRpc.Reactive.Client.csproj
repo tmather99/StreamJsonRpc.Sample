@@ -12,6 +12,7 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<InvariantGlobalization>true</InvariantGlobalization>
+		<NoWarn>$(NoWarn);IL2026;IL3050</NoWarn>
 	</PropertyGroup>
 
 	<ItemGroup>

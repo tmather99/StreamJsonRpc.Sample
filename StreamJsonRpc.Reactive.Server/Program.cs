@@ -22,8 +22,6 @@ class RpcService : IRpcService
 
 class Program
 {
-    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Using the Json source generator.")]
-    [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "Using the Json source generator.")]
     static async Task Main()
     {
         var server = new NamedPipeServerStream("rpcpipe", PipeDirection.InOut, 1,

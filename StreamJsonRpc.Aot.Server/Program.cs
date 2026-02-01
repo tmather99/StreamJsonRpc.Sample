@@ -16,7 +16,8 @@ while (true)
 
 static async Task RunAsync(NamedPipeServerStream serverPipe, int clientId)
 {
-    JsonRpc serverRpc = new(new HeaderDelimitedMessageHandler(serverPipe, SystemTextJson.CreateFormatter()));
+    //JsonRpc serverRpc = new(new HeaderDelimitedMessageHandler(serverPipe, SystemTextJson.CreateFormatter()));
+    JsonRpc serverRpc = new(new LengthHeaderMessageHandler(serverPipe, serverPipe, NerdbankMessagePack.CreateFormatter()));
     RpcTargetMetadata targetMetadata = RpcTargetMetadata.FromShape<IServer>();
     serverRpc.AddLocalRpcTarget(targetMetadata, new Server(), null);
     serverRpc.StartListening();

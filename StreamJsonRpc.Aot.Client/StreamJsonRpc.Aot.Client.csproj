@@ -12,10 +12,12 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<InvariantGlobalization>true</InvariantGlobalization>
+		<NoWarn>$(NoWarn);IL2026;IL3050</NoWarn>
 	</PropertyGroup>
 
 	<ItemGroup>
 	  <Compile Include="..\StreamJsonRpc.Aot.Server\IServer.cs" Link="IServer.cs" />
+	  <Compile Include="..\StreamJsonRpc.Aot.Server\NerdbankMessagePack.cs" Link="NerdbankMessagePack.cs" />
 	  <Compile Include="..\StreamJsonRpc.Aot.Server\SystemTextJson.cs" Link="SystemTextJson.cs" />
 	</ItemGroup>
 

@@ -15,10 +15,10 @@ internal static partial class NerdbankMessagePack
     internal static async Task RunAsync()
     {
         (Stream clientPipe, Stream serverPipe) = FullDuplexStream.CreatePair();
-        JsonRpc serverRpc = new JsonRpc(new LengthHeaderMessageHandler(serverPipe, serverPipe, CreateFormatter()));
-        JsonRpc clientRpc = new JsonRpc(new LengthHeaderMessageHandler(clientPipe, clientPipe, CreateFormatter()));
+        JsonRpc serverRpc = new(new LengthHeaderMessageHandler(serverPipe, serverPipe, CreateFormatter()));
+        JsonRpc clientRpc = new(new LengthHeaderMessageHandler(clientPipe, clientPipe, CreateFormatter()));
 
-        var targetMetadata = RpcTargetMetadata.FromShape<IServer>();
+        RpcTargetMetadata targetMetadata = RpcTargetMetadata.FromShape<IServer>();
         serverRpc.AddLocalRpcTarget(targetMetadata, new Server(), null);
         serverRpc.StartListening();
         

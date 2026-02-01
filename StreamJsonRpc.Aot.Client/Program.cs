@@ -11,7 +11,8 @@ await RunAsync(stream);
 
 static async Task RunAsync(NamedPipeClientStream clientPipe)
 {
-    JsonRpc clientRpc = new(new HeaderDelimitedMessageHandler(clientPipe, SystemTextJson.CreateFormatter()));
+    //JsonRpc clientRpc = new(new HeaderDelimitedMessageHandler(clientPipe, SystemTextJson.CreateFormatter()));
+    JsonRpc clientRpc = new(new LengthHeaderMessageHandler(clientPipe, clientPipe, NerdbankMessagePack.CreateFormatter()));
     IServer proxy = clientRpc.Attach<IServer>();
     clientRpc.StartListening();
 
