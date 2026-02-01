@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
 using StreamJsonRpc;
 using StreamJsonRpc.Protocol;
 
@@ -15,9 +16,6 @@ internal static partial class SystemTextJson
         };
     }
 
-    [JsonSourceGenerationOptions(
-        GenerationMode = JsonSourceGenerationMode.Metadata,
-        PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
     [JsonSerializable(typeof(object))]
     [JsonSerializable(typeof(string))]
     [JsonSerializable(typeof(bool))]
@@ -27,14 +25,6 @@ internal static partial class SystemTextJson
     [JsonSerializable(typeof(Guid))]
     [JsonSerializable(typeof(object[]))]
     [JsonSerializable(typeof(Dictionary<string, object>))]
-
-    // JSON-RPC protocol messages
-    [JsonSerializable(typeof(JsonRpcRequest))]
-    [JsonSerializable(typeof(JsonRpcResult))]
-    [JsonSerializable(typeof(JsonRpcError))]
-
-    // Streaming payloads
-    [JsonSerializable(typeof(int))]
     [JsonSerializable(typeof(ValueTuple<int>))]
     private partial class SourceGenerationContext : JsonSerializerContext;
 }

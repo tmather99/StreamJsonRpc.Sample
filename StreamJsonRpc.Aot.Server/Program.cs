@@ -2,7 +2,7 @@
 using StreamJsonRpc;
 using StreamJsonRpc.Aot.Server;
 
-int requestId = 0;
+int clientRequests = 0;
 
 while (true)
 {
@@ -13,7 +13,7 @@ while (true)
                                        NamedPipeServerStream.MaxAllowedServerInstances,
                                        PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
     await stream.WaitForConnectionAsync();
-    await RunAsync(stream, ++requestId);
+    await RunAsync(stream, ++clientRequests);
 }
 
 static async Task RunAsync(NamedPipeServerStream pipe, int requestId)
