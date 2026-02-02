@@ -1,4 +1,5 @@
-﻿using System.IO.Pipes;
+﻿using System.Collections.Generic;
+using System.IO.Pipes;
 using StreamJsonRpc;
 
 Guid guid = Guid.NewGuid();
@@ -26,9 +27,21 @@ static async Task RunAsync(NamedPipeClientStream pipe, Guid guid)
 
     if (connected)
     {
-        int i = Random.Shared.Next(0, 10);
-        int j = Random.Shared.Next(0, 10);
-        int sum = await proxy.AddAsync(i, j);
-        Console.WriteLine($"  Calculating {i} + {j} = {sum}");
+        int a = Random.Shared.Next(0, 10);
+        int b = Random.Shared.Next(0, 10);
+        int sum = await proxy.AddAsync(a, b);
+        Console.WriteLine($"  Calculating {a} + {b} = {sum}");
+
+        List<string> list = await proxy.GetListAsync();
+        Console.WriteLine($"  GetList:");
+        Console.WriteLine(string.Join(Environment.NewLine, list.Select((v, i) => $"    [{i}] {v}")));
+
+        Dictionary<Guid, DateTime> dict = await proxy.GetDictionaryAsync();
+        Console.WriteLine($"  GetDictionary:");
+        Console.WriteLine(string.Join(Environment.NewLine, dict.Select(kv => $"    {kv.Key}={kv.Value:O}")));
+
+        Dictionary<string, string> table = await proxy.GetTableAsync();
+        Console.WriteLine($"  GetTable:");
+        Console.WriteLine(string.Join(Environment.NewLine, table.Select(kv => $"    {kv.Key}={kv.Value:O}")));
     }
 }

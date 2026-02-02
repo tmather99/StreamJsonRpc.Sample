@@ -24,7 +24,8 @@ internal static partial class SystemTextJson
     [JsonSerializable(typeof(double))]
     [JsonSerializable(typeof(Guid))]
     [JsonSerializable(typeof(object[]))]
-    [JsonSerializable(typeof(Dictionary<string, object>))]
-    [JsonSerializable(typeof(ValueTuple<int>))]
+    [JsonSerializable(typeof(List<string>))]
+    [JsonSerializable(typeof(Dictionary<Guid, DateTime>))]
+    [JsonSerializable(typeof(Dictionary<string, string>))]
     private partial class SourceGenerationContext : JsonSerializerContext;
 }
