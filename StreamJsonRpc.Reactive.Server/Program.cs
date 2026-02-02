@@ -1,38 +1,42 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.IO.Pipes;
-using System.Reactive.Linq;
+﻿using System.IO.Pipes;
 using StreamJsonRpc;
+using StreamJsonRpc.Reactive.Server;
 
-class RpcService : IRpcService
+string pipeName = "rpcpipe";
+int clientRequests = 0;
+
+while (true)
 {
-    public void SubscribeCounter(IObserver<int> observer)
-    {
-        Console.WriteLine("Client subscribed to counter.");
+    await Console.Error.WriteLineAsync($"\nWaiting for client to make on {pipeName}...\n");
 
-        var sub = Observable.Interval(TimeSpan.FromSeconds(1))
-            .Select(x =>
-            {
-                var value = (int)x + 1;
-                Console.WriteLine($"Select produced: {value}");
-                return value;
-            })
-            .Subscribe(observer);
-    }
+    NamedPipeServerStream stream = new(pipeName,
+                                       PipeDirection.InOut,
+                                       NamedPipeServerStream.MaxAllowedServerInstances,
+                                       PipeTransmissionMode.Byte,
+                                       PipeOptions.Asynchronous);
+
+    await stream.WaitForConnectionAsync();
+    await RunAsync(stream, ++clientRequests);
 }
 
-class Program
+static async Task RunAsync(NamedPipeServerStream pipe, int requestId)
 {
-    static async Task Main()
-    {
-        var server = new NamedPipeServerStream("rpcpipe", PipeDirection.InOut, 1,
-            PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
+    await Console.Error.WriteLineAsync($"  Connection request #{requestId} received.");
 
-        Console.WriteLine("Waiting for client...");
-        await server.WaitForConnectionAsync();
+    HeaderDelimitedMessageHandler messageHandler = new(pipe, SystemTextJson.CreateFormatter());
+    JsonRpc jsonRpc = new(messageHandler);
 
-        JsonRpc rpc = JsonRpc.Attach(server, new RpcService());
+    //jsonRpc.AddLocalRpcTarget(new RpcService());
+    //jsonRpc.StartListening();
 
-        Console.WriteLine("Server ready.");
-        await rpc.Completion;
-    }
+    RpcTargetMetadata targetMetadata = RpcTargetMetadata.FromShape<IRpcService>();
+    jsonRpc.AddLocalRpcTarget(targetMetadata, new RpcService(), new 
+        JsonRpcTargetOptions()
+        {
+            UseSingleObjectParameterDeserialization = true
+        });
+    jsonRpc.StartListening();
+
+    await jsonRpc.Completion;
+    await Console.Error.WriteLineAsync($"  Request #{requestId} terminated.");
 }

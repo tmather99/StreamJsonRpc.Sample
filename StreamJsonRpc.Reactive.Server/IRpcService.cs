@@ -1,11 +1,15 @@
-﻿using System;
-using System.Reactive.Linq;
-using PolyType;
+﻿using PolyType;
 using StreamJsonRpc;
 
+// Shared code between client and server
 [JsonRpcContract, GenerateShape(IncludeMethods = MethodShapeFlags.PublicInstance)]
-public partial interface IRpcService
+internal partial interface IRpcService : IDisposable
 {
-    // Client sends observer → server pushes into it
-    void SubscribeCounter(IObserver<int> observer);
+    Task<bool> GetBool();
+
+    Task<IAsyncEnumerable<int>> GetAsyncEnumerable();
+
+    Task Subcribe(IObserver<int> observer);
+
+    Task<IObservable<int>> GetObservable();
 }

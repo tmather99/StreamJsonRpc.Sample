@@ -26,6 +26,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NativeAOTCompatibility.Test", "NativeAOTCompatibility.Test\NativeAOTCompatibility.Test.csproj", "{3ECB8337-48D2-0080-2BC3-36144CCE2918}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Reactive", "Reactive", "{7D2E3071-BC60-4782-820E-0F02E301F65E}"
+	ProjectSection(SolutionItems) = preProject
+		readme.md = readme.md
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StreamJsonRpc.Reactive.Server", "StreamJsonRpc.Reactive.Server\StreamJsonRpc.Reactive.Server.csproj", "{86EFC48D-64A4-E38D-0BB9-B1A4FE936A66}"
 EndProject
@@ -40,6 +43,15 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Benchmarks", "Benchmarks\Benchmarks.csproj", "{2311A35A-630F-8D56-15CD-BBB525570F8F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StreamJsonRpc.Jit.Client", "StreamJsonRpc.Jit.Client\StreamJsonRpc.Jit.Client.csproj", "{DE611607-A591-70ED-8661-5AEE2772722D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StreamJsonRpc.Notify.Listener", "StreamJsonRpc.Reactive.NotifyClient\StreamJsonRpc.Notify.Listener.csproj", "{662D4E79-E7E9-A17F-5980-6505D0AF926D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StreamJsonRpc.Notify.Source", "StreamJsonRpc.Reactive.NotifyServer\StreamJsonRpc.Notify.Source.csproj", "{BAACEC41-120B-C9A8-0902-4BEEF05ADBFB}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Notify", "Notify", "{EDA3D87B-FC95-4C83-8EC4-81EEA61BEC71}"
+	ProjectSection(SolutionItems) = preProject
+		readme.md = readme.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -91,6 +103,14 @@ Global
 		{DE611607-A591-70ED-8661-5AEE2772722D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DE611607-A591-70ED-8661-5AEE2772722D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DE611607-A591-70ED-8661-5AEE2772722D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{662D4E79-E7E9-A17F-5980-6505D0AF926D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{662D4E79-E7E9-A17F-5980-6505D0AF926D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{662D4E79-E7E9-A17F-5980-6505D0AF926D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{662D4E79-E7E9-A17F-5980-6505D0AF926D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BAACEC41-120B-C9A8-0902-4BEEF05ADBFB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BAACEC41-120B-C9A8-0902-4BEEF05ADBFB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BAACEC41-120B-C9A8-0902-4BEEF05ADBFB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BAACEC41-120B-C9A8-0902-4BEEF05ADBFB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -105,6 +125,8 @@ Global
 		{2B18D14A-7E1A-AC36-D430-EE868AE9E376} = {40F0EBA1-5464-4A6A-99DB-84F7E2629211}
 		{12744593-00D1-7741-C017-26FB566D70B8} = {40F0EBA1-5464-4A6A-99DB-84F7E2629211}
 		{DE611607-A591-70ED-8661-5AEE2772722D} = {40F0EBA1-5464-4A6A-99DB-84F7E2629211}
+		{662D4E79-E7E9-A17F-5980-6505D0AF926D} = {EDA3D87B-FC95-4C83-8EC4-81EEA61BEC71}
+		{BAACEC41-120B-C9A8-0902-4BEEF05ADBFB} = {EDA3D87B-FC95-4C83-8EC4-81EEA61BEC71}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D362BF52-6BAF-410F-A6F8-44CD54B274F0}

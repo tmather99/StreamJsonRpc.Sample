@@ -10,4 +10,7 @@ internal partial interface IServer
     Task<List<string>> GetListAsync();
     Task<Dictionary<Guid, DateTime>> GetDictionaryAsync();
     Task<Dictionary<string, string>> GetTableAsync();
+
+    Task SendTicksAsync(Guid guid);
+    Task CancelTickOperation(Guid guid);
 }

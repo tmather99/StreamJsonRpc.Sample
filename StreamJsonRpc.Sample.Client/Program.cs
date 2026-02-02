@@ -24,7 +24,10 @@ class Program
         else
         {
             Console.WriteLine("Connecting to server...");
-            using (var stream = new NamedPipeClientStream(".", "StreamJsonRpcSamplePipe", PipeDirection.InOut, PipeOptions.Asynchronous))
+            using (var stream = new NamedPipeClientStream(serverName:".",
+                                                         "StreamJsonRpcSamplePipe", 
+                                                          PipeDirection.InOut,
+                                                          PipeOptions.Asynchronous))
             {
                 await stream.ConnectAsync();
                 await ActAsRpcClientAsync(stream);

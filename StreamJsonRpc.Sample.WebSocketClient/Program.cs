@@ -81,9 +81,6 @@ namespace StreamJsonRpc.Sample.WebSocketClient
 
                     int result = await jsonRpc.InvokeWithCancellationAsync<int>("AddAsync", [i, j], cancellationToken);
                     Console.WriteLine($"JSON-RPC server says {i} + {j} = {result}");
-
-                    // example async work
-                    await jsonRpc.NotifyAsync("tick", new { guid, tick });
                 };
             }
         }   

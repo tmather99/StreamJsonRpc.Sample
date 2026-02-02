@@ -12,13 +12,10 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<InvariantGlobalization>true</InvariantGlobalization>
+		<LangVersion>latest</LangVersion>
 		<NoWarn>$(NoWarn);IL2026;IL3050</NoWarn>
+		<NoWarn>$(NoWarn);StreamJsonRpc0011;StreamJsonRpc0008</NoWarn>
 	</PropertyGroup>
-
-	<ItemGroup>
-	  <Compile Include="..\StreamJsonRpc.Reactive.Server\IRpcService.cs" Link="IRpcService.cs" />
-	  <Compile Include="..\StreamJsonRpc.Reactive.Server\SystemTextJson.cs" Link="SystemTextJson.cs" />
-	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="StreamJsonRpc" Version="2.24.84" />

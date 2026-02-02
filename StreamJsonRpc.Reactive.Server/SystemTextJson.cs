@@ -1,5 +1,9 @@
-﻿using System.Text.Json;
+﻿using System;
+using System.Collections.Generic;
+using System.Reactive;
+using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using StreamJsonRpc;
 using StreamJsonRpc.Protocol;
 
@@ -10,9 +14,13 @@ internal static partial class SystemTextJson
     public static IJsonRpcMessageFormatter CreateFormatter()
     {
         return new SystemTextJsonFormatter() {
-            JsonSerializerOptions = {
-                TypeInfoResolver = SourceGenerationContext.Default
-            },
+            JsonSerializerOptions = 
+            {
+                PropertyNameCaseInsensitive = false,
+                IncludeFields = true,
+                TypeInfoResolver = JsonTypeInfoResolver.Combine(SourceGenerationContext.Default,
+                                                                new DefaultJsonTypeInfoResolver())
+            }
         };
     }
 
@@ -23,11 +31,11 @@ internal static partial class SystemTextJson
     [JsonSerializable(typeof(long))]
     [JsonSerializable(typeof(double))]
     [JsonSerializable(typeof(Guid))]
-    [JsonSerializable(typeof(CancellationToken))]
-    [JsonSerializable(typeof(CancellationTokenSource))]
     [JsonSerializable(typeof(object[]))]
     [JsonSerializable(typeof(List<string>))]
     [JsonSerializable(typeof(Dictionary<Guid, DateTime>))]
     [JsonSerializable(typeof(Dictionary<string, string>))]
+    [JsonSerializable(typeof(IObserver<int>))]
+    [JsonSerializable(typeof(IObservable<int>))]
     private partial class SourceGenerationContext : JsonSerializerContext;
 }
