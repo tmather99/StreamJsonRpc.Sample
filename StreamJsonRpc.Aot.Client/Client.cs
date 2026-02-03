@@ -67,6 +67,14 @@ internal class Client
                 await jsonRpc.NotifyAsync("SendTicksAsync", guid);
                 Console.WriteLine($"  SendTicksAsync {guid}");
 
+                filteredSubscription = await FilteredSubscriptionAsync();
+
+                // blocks until canceled via Ctrl+C.
+                await jsonRpc.Completion.WithCancellation(cts.Token);
+            }
+
+            async Task<IDisposable> FilteredSubscriptionAsync()
+            {
                 // Apply Rx operators to the observable
                 filteredSubscription = 
                     numberStreamStreamListener.Values.Where(x => x % 2 == 0)
@@ -77,9 +85,8 @@ internal class Client
 
                 // Start subscription to server stream
                 await server.SubscribeToNumberStream();
-        
-                // blocks until canceled via Ctrl+C.
-                await jsonRpc.Completion.WithCancellation(cts.Token);
+
+                return filteredSubscription;
             }
         }
         catch (OperationCanceledException)
@@ -93,4 +100,4 @@ internal class Client
             Console.WriteLine($"Error: {ex.Message}");
         }
     }
-}
+}   
