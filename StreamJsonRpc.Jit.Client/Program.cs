@@ -11,9 +11,9 @@ using StreamJsonRpc.Jit.Client;
 
 class Program
 {
-    static Random rand = new Random();
+    static public bool isConnected = false;
     static Guid guid = Guid.NewGuid();
-    static bool isConnected = false;
+    static Random rand = new Random();
 
     static async Task Main(string[] args)
     {
@@ -44,7 +44,6 @@ class Program
             {
                 await stream.ConnectAsync();
                 await RunAsync(stream, cts);
-                isConnected = true;
                 Console.WriteLine("\nPress Ctrl+C to end.\n");
             }
             catch (OperationCanceledException)
@@ -88,9 +87,9 @@ class Program
             jsonRpc.StartListening();
 
             Console.WriteLine($"  ClientId: {guid}");
-            bool connected = await jsonRpc.InvokeAsync<bool>("ConnectAsync", guid);
+            isConnected = await jsonRpc.InvokeAsync<bool>("ConnectAsync", guid);
 
-            if (connected)
+            if (isConnected)
             {
                 int a = rand.Next(1, 10);
                 int b = rand.Next(1, 10);
