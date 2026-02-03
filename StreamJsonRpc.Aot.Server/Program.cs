@@ -41,15 +41,9 @@ internal class Program
                     Console.WriteLine($"  Exception: {e.Exception}");
             };
 
-            // Register listener RPC methods
-            IListener listener = jsonRpc.Attach<IListener>();
-
             RpcTargetMetadata targetMetadata = RpcTargetMetadata.FromShape<IServer>();
-            Server server = new Server(listener);
+            Server server = new Server(jsonRpc);
             jsonRpc.AddLocalRpcTarget(targetMetadata, server, null);
-
-            // Give server reference to JSON-RPC so it can call back to client
-            server.SetClientRpc(jsonRpc);
 
             jsonRpc.StartListening();
 

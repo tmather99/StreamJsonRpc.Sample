@@ -7,37 +7,33 @@ using StreamJsonRpc.Aot.Common;
 namespace StreamJsonRpc.Aot.Server;
 
 // Server implementation
-public class Server : IServer
+public class Server(JsonRpc jsonRpc) : IServer
 {
+    private Guid guid;
     private bool isCancel;
     private int tickNumber = 0;
-    private IDisposable? _subscription = null;
-    private JsonRpc? jsonRpc = null;
-    private IListener listener;
 
+    private IDisposable _subscription = null!;
     private readonly Subject<int> _subject = new();
 
-    public Server(IListener listener)
-    {
-        this.listener = listener;
-
-        // Simulate publishing data periodically
-        Observable.Interval(TimeSpan.FromMilliseconds(100))
-            .Subscribe(i =>
-            {
-                int r = Random.Shared.Next(1, 100);
-                _subject.OnNext(r);
-            });
-    }
-
-    public void SetClientRpc(JsonRpc jsonRpc)
-    {
-        this.jsonRpc = jsonRpc;
-    }
+    private readonly JsonRpc jsonRpc = jsonRpc;
+    private readonly IListener listener = jsonRpc.Attach<IListener>();
 
     public Task<bool> ConnectAsync(Guid guid)
     {
         Console.WriteLine($"  ClientId: {guid}");
+
+        this.guid = guid;
+
+        // Simulate publishing data periodically
+        Observable.Interval(TimeSpan.FromMilliseconds(100))
+                  .Subscribe(i =>
+                   {
+                       if (isCancel) return;
+                       int r = Random.Shared.Next(1, 100);
+                       _subject.OnNext(r);
+                   });
+
         return Task.FromResult(true);
     }
 
@@ -64,8 +60,9 @@ public class Server : IServer
             await Task.Delay(1000);
         }
 
+        _subject.Dispose();
         _subscription?.Dispose();
-        _subscription = null;
+        _subscription = null!;
     }
 
     public Task<int> AddAsync(int a, int b)
@@ -130,7 +127,7 @@ public class Server : IServer
         {
             try
             {
-                Console.WriteLine($"      -> {value}");
+                Console.WriteLine($"      {value, 3} -> {guid}");
 
                 if (isCancel) return;
 
