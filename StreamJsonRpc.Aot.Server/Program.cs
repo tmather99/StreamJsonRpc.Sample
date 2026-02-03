@@ -37,8 +37,12 @@ static async Task RunAsync(NamedPipeServerStream pipe, int requestId)
     };
 
     RpcTargetMetadata targetMetadata = RpcTargetMetadata.FromShape<IServer>();
-    IServer server = new Server(jsonRpc);
+    Server server = new Server();
     jsonRpc.AddLocalRpcTarget(targetMetadata, server, null);
+
+    // Give server reference to JSON-RPC so it can call back to client
+    server.SetClientRpc(jsonRpc);
+
     jsonRpc.StartListening();
 
     //await jsonRpc.Completion;

@@ -13,4 +13,6 @@ internal partial interface IServer
 
     Task SendTicksAsync(Guid guid);
     Task CancelTickOperation(Guid guid);
+
+    Task SubscribeToNumberStream();
 }

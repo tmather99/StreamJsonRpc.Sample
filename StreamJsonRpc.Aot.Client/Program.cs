@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
-using System.IO.Pipes;
-using System.Threading;
+﻿using System.IO.Pipes;
+using System.Reactive.Linq;
 using Microsoft.VisualStudio.Threading;
 using StreamJsonRpc;
+using StreamJsonRpc.Aot.Client;
 
 Guid guid = Guid.NewGuid();
 
@@ -58,7 +58,15 @@ static async Task RunAsync(NamedPipeClientStream pipe, Guid guid, CancellationTo
             };
         }
 
+        // Register server RPC methods
         IServer server = jsonRpc.Attach<IServer>();
+
+        // Register client callbacks so server can call back to us
+        RpcTargetMetadata targetMetadata = RpcTargetMetadata.FromShape<IListener>();
+        var listener = new Listener();
+        jsonRpc.AddLocalRpcTarget(targetMetadata, listener, null);
+
+        // Start listening for messages
         jsonRpc.StartListening();
 
         Console.WriteLine($"  ClientId: {guid}");
@@ -83,9 +91,18 @@ static async Task RunAsync(NamedPipeClientStream pipe, Guid guid, CancellationTo
             Console.WriteLine($"  GetTable:");
             Console.WriteLine(string.Join(Environment.NewLine, table.Select(kv => $"    {kv.Key}={kv.Value:O}")));
 
+            // Start server hearbeat ticks
             await jsonRpc.NotifyAsync("SendTicksAsync", guid);
             Console.WriteLine($"  SendTicksAsync {guid}");
 
+            // Apply Rx operators to the observable
+            var filteredSubscription = 
+                    listener.Values.Where(x => x % 2 == 0)
+                                   .Subscribe(x => Console.WriteLine($"           -> Even number filter: {x}"));
+
+            // Start subscription to server stream
+            var subscriptionTask = server.SubscribeToNumberStream();
+            
             // blocks until canceled via Ctrl+C.
             await jsonRpc.Completion.WithCancellation(cts.Token);
         }

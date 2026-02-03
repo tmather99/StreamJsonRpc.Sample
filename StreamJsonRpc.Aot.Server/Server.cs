@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Diagnostics.Metrics;
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
 
 namespace StreamJsonRpc.Aot.Server;
 
@@ -7,9 +10,23 @@ internal class Server : IServer
 {
     private bool isCancel;
     private int tickNumber = 0;
-    private JsonRpc jsonRpc;
+    private IDisposable? _subscription = null;
+    private JsonRpc? jsonRpc = null;
 
-    public Server(JsonRpc jsonRpc)
+    private readonly Subject<int> _subject = new();
+
+    public Server()
+    {
+        // Simulate publishing data periodically
+        Observable.Interval(TimeSpan.FromMilliseconds(100))
+            .Subscribe(i =>
+            {
+                int r = Random.Shared.Next(1, 100);
+                _subject.OnNext(r);
+            });
+    }
+
+    public void SetClientRpc(JsonRpc jsonRpc)
     {
         this.jsonRpc = jsonRpc;
     }
@@ -31,12 +48,20 @@ internal class Server : IServer
     {
         Console.WriteLine($"  SendTicksAsync isCancel={isCancel}");
 
+        if (jsonRpc == null)
+        {
+            throw new InvalidOperationException("Client RPC not set");
+        }
+
         while (!isCancel)
         {
-            await jsonRpc.NotifyAsync("Tick", ++tickNumber );
+            await jsonRpc.NotifyAsync("Tick", ++tickNumber);
             Console.WriteLine($"    Notify clientId {guid} - #{tickNumber}");
             await Task.Delay(1000);
         }
+
+        _subscription?.Dispose();
+        _subscription = null;
     }
 
     public Task<int> AddAsync(int a, int b)
@@ -83,5 +108,49 @@ internal class Server : IServer
         };
 
         return Task.FromResult(table);
+    }
+
+    // Server streams data to client using notifications
+    public async Task SubscribeToNumberStream()
+    {
+        Console.WriteLine("  Client subscribed to number stream");
+
+        if (jsonRpc == null)
+        {
+            throw new InvalidOperationException("Client RPC not set");
+        }
+
+        _subscription = _subject.Subscribe(
+            async value =>
+            {
+                try
+                {
+                    Console.WriteLine($"     -> {value}, isCancel={isCancel}");
+
+                    if (isCancel) return;
+
+                    // Call back to client using notification
+                    await jsonRpc.NotifyAsync("OnNextValue", value);
+                    //await this.listner.OnNextValue(value);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error sending to client: {ex.Message}");
+                }
+            },
+            async error =>
+            {
+                if (isCancel) return;
+
+                Console.WriteLine($"Stream error: {error.Message}");
+                await jsonRpc.NotifyAsync("OnError", error.Message);
+            },
+            async () =>
+            {
+                if (isCancel) return;
+
+                Console.WriteLine("Stream completed");
+                await jsonRpc.NotifyAsync("OnCompleted");
+            });
     }
 }

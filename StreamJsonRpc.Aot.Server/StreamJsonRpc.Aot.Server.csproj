@@ -12,7 +12,9 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<InvariantGlobalization>true</InvariantGlobalization>
+		<LangVersion>latest</LangVersion>
 		<NoWarn>$(NoWarn);IL2026;IL3050</NoWarn>
+		<NoWarn>$(NoWarn);StreamJsonRpc0003</NoWarn>
 	</PropertyGroup>
 
 	<ItemGroup>
