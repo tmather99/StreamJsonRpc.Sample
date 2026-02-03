@@ -21,7 +21,7 @@ internal static partial class SystemTextJson
     [JsonSerializable(typeof(int))]
     [JsonSerializable(typeof(long))]
     [JsonSerializable(typeof(double))]
-    [JsonSerializable(typeof(Guid))]]))]
+    [JsonSerializable(typeof(Guid))]
     [JsonSerializable(typeof(List<string>))]
     [JsonSerializable(typeof(Dictionary<Guid, DateTime>))]
     [JsonSerializable(typeof(Dictionary<string, string>))]
