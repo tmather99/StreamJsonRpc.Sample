@@ -34,7 +34,7 @@ internal class Client
             IServer server = jsonRpc.Attach<IServer>();
 
             // Register client callbacks so server can call back to us
-            RpcTargetMetadata targetMetadata = RpcTargetMetadata.FromShape<IListener>();
+            RpcTargetMetadata targetMetadata = RpcTargetMetadata.FromShape<INumberStreamListener>();
             NumberStreamListener listener = new();
             jsonRpc.AddLocalRpcTarget(targetMetadata, listener, null);
 

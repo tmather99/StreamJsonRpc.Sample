@@ -5,7 +5,7 @@ namespace StreamJsonRpc.Aot.Client;
 internal class Program
 {
     internal static bool isConnected = false;
-    static Guid guid = Guid.NewGuid();
+    internal static Guid guid = Guid.NewGuid();
 
     // Setup connection and handle ctrl+c to cancel the client.
     public static async Task Main(string[] args)

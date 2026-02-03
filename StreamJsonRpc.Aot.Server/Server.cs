@@ -13,11 +13,12 @@ public class Server(JsonRpc jsonRpc) : IServer
     private bool isCancel;
     private int tickNumber = 0;
 
+    // for cleanup when RPC request is canceled
     private IDisposable _subscription = null!;
     private readonly Subject<int> _subject = new();
 
-    private readonly JsonRpc jsonRpc = jsonRpc;
-    private readonly IListener listener = jsonRpc.Attach<IListener>();
+    private readonly JsonRpc _jsonRpc = jsonRpc;
+    private readonly INumberStreamListener _numberStreamListener = jsonRpc.Attach<INumberStreamListener>();
 
     public Task<bool> ConnectAsync(Guid guid)
     {
@@ -48,7 +49,7 @@ public class Server(JsonRpc jsonRpc) : IServer
     {
         Console.WriteLine($"  SendTicksAsync isCancel={isCancel}");
 
-        if (jsonRpc == null)
+        if (_jsonRpc == null)
         {
             throw new InvalidOperationException("Client RPC not set");
         }
@@ -56,7 +57,7 @@ public class Server(JsonRpc jsonRpc) : IServer
         while (!isCancel)
         {
             // Send notification with tick number sequence per client
-            await jsonRpc.NotifyAsync("Tick", ++tickNumber);
+            await _jsonRpc.NotifyAsync("Tick", ++tickNumber);
             Console.WriteLine($"    Notify clientId {guid} - #{tickNumber}");
             await Task.Delay(1000);
         }
@@ -117,7 +118,7 @@ public class Server(JsonRpc jsonRpc) : IServer
     {
         Console.WriteLine("  Client subscribed to number stream");
 
-        if (jsonRpc == null)
+        if (_jsonRpc == null)
         {
             throw new InvalidOperationException("Client RPC not set");
         }
@@ -133,7 +134,7 @@ public class Server(JsonRpc jsonRpc) : IServer
                 if (isCancel) return;
 
                 // Call back to client using notification
-                await listener.OnNextValue(value);
+                await _numberStreamListener.OnNextValue(value);
             }
             catch (Exception ex)
             {
@@ -146,7 +147,7 @@ public class Server(JsonRpc jsonRpc) : IServer
             if (isCancel) return;
 
             Console.WriteLine($"Stream error: {error.Message}");
-            await listener.OnError(error.Message);
+            await _numberStreamListener.OnError(error.Message);
         }
 
         async void OnCompleted()
@@ -154,7 +155,7 @@ public class Server(JsonRpc jsonRpc) : IServer
             if (isCancel) return;
 
             Console.WriteLine("Stream completed");
-            await listener.OnCompleted();
+            await _numberStreamListener.OnCompleted();
         }
     }
 }

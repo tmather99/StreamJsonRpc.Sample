@@ -7,7 +7,7 @@ namespace StreamJsonRpc.Aot.Common;
 
 // Shared code between client and server
 [JsonRpcContract, GenerateShape(IncludeMethods = MethodShapeFlags.PublicInstance)]
-public partial interface IListener
+public partial interface INumberStreamListener
 {
     Task OnNextValue(int value);
     Task OnError(string error);
