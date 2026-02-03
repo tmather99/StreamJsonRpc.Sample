@@ -34,9 +34,9 @@ internal class Client
             IServer server = jsonRpc.Attach<IServer>();
 
             // Register client callbacks so server can call back to us
-            RpcTargetMetadata targetMetadata = RpcTargetMetadata.FromShape<INumberStreamListener>();
-            NumberStreamListener listener = new();
-            jsonRpc.AddLocalRpcTarget(targetMetadata, listener, null);
+            RpcTargetMetadata targetMetadata = RpcTargetMetadata.FromShape<INumberStreamStreamListener>();
+            NumberStreamStreamListener numberStreamStreamListener = new();
+            jsonRpc.AddLocalRpcTarget(targetMetadata, numberStreamStreamListener, null);
 
             // Start listening for messages
             jsonRpc.StartListening();
@@ -69,8 +69,11 @@ internal class Client
 
                 // Apply Rx operators to the observable
                 filteredSubscription = 
-                    listener.Values.Where(x => x % 2 == 0)
-                        .Subscribe(x => Console.WriteLine($"           -> Even number filter: {x}"));
+                    numberStreamStreamListener.Values.Where(x => x % 2 == 0)
+                        .Subscribe(x =>
+                        {
+                            Console.WriteLine($"           -> Even number filter: {x}");
+                        });
 
                 // Start subscription to server stream
                 await server.SubscribeToNumberStream();

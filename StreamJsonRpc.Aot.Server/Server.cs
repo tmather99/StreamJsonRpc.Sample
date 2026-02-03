@@ -18,7 +18,7 @@ public class Server(JsonRpc jsonRpc) : IServer
     private readonly Subject<int> _subject = new();
 
     private readonly JsonRpc _jsonRpc = jsonRpc;
-    private readonly INumberStreamListener _numberStreamListener = jsonRpc.Attach<INumberStreamListener>();
+    private readonly INumberStreamStreamListener _numberStreamStreamListener = jsonRpc.Attach<INumberStreamStreamListener>();
 
     public Task<bool> ConnectAsync(Guid guid)
     {
@@ -134,7 +134,7 @@ public class Server(JsonRpc jsonRpc) : IServer
                 if (isCancel) return;
 
                 // Call back to client using notification
-                await _numberStreamListener.OnNextValue(value);
+                await _numberStreamStreamListener.OnNextValue(value);
             }
             catch (Exception ex)
             {
@@ -147,7 +147,7 @@ public class Server(JsonRpc jsonRpc) : IServer
             if (isCancel) return;
 
             Console.WriteLine($"Stream error: {error.Message}");
-            await _numberStreamListener.OnError(error.Message);
+            await _numberStreamStreamListener.OnError(error.Message);
         }
 
         async void OnCompleted()
@@ -155,7 +155,7 @@ public class Server(JsonRpc jsonRpc) : IServer
             if (isCancel) return;
 
             Console.WriteLine("Stream completed");
-            await _numberStreamListener.OnCompleted();
+            await _numberStreamStreamListener.OnCompleted();
         }
     }
 }

@@ -28,8 +28,8 @@ namespace StreamJsonRpc.Jit.Client
                 IServer server = jsonRpc.Attach<IServer>();
 
                 // Register client callbacks so server can call back to us
-                var listener = new NumberStreamListener();
-                jsonRpc.AddLocalRpcTarget(listener);
+                var numberStreamStreamListener = new NumberStreamStreamListener();
+                jsonRpc.AddLocalRpcTarget(numberStreamStreamListener);
 
                 // Handler for server push notifications.
                 Func<int, Task> TickHandler()
@@ -68,11 +68,12 @@ namespace StreamJsonRpc.Jit.Client
                     Console.WriteLine($"  SendTicksAsync {guid}");
 
                     // Apply Rx operators to the observable
-                    filteredSubscription = listener.Values.Where(x => x % 2 == 0)
-                        .Subscribe(x =>
-                        {
-                            Console.WriteLine($"           -> Even number filter: {x}");
-                        });
+                    filteredSubscription = 
+                        numberStreamStreamListener.Values.Where(x => x % 2 == 0)
+                            .Subscribe(x =>
+                            {
+                                Console.WriteLine($"           -> Even number filter: {x}");
+                            });
 
                     // Start subscription to server stream
                     var subscriptionTask = server.SubscribeToNumberStream();

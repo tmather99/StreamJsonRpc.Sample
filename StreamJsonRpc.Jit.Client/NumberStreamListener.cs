@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 namespace StreamJsonRpc.Jit.Client
 {
     // Client-side implementation that receives callbacks from server
-    public class NumberStreamListener : INumberStreamListener
+    public class NumberStreamStreamListener : INumberStreamStreamListener
     {
         private readonly Subject<int> _subject = new Subject<int>();
 

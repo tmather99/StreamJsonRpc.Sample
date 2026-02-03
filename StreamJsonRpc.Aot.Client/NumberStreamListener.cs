@@ -4,7 +4,7 @@ using StreamJsonRpc.Aot.Common;
 namespace StreamJsonRpc.Aot.Client;
 
 // Client-side implementation that receives callbacks from server
-public class NumberStreamListener : INumberStreamListener
+public class NumberStreamStreamListener : INumberStreamStreamListener
 {
     private readonly Subject<int> _subject = new Subject<int>();
 
