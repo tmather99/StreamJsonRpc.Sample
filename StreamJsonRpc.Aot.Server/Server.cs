@@ -120,37 +120,40 @@ internal class Server : IServer
             throw new InvalidOperationException("Client RPC not set");
         }
 
-        _subscription = _subject.Subscribe(
-            async value =>
-            {
-                try
-                {
-                    Console.WriteLine($"     -> {value}, isCancel={isCancel}");
+        _subscription = _subject.Subscribe(OnNext, OnError, OnCompleted);
 
-                    if (isCancel) return;
-
-                    // Call back to client using notification
-                    await jsonRpc.NotifyAsync("OnNextValue", value);
-                    //await this.listner.OnNextValue(value);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error sending to client: {ex.Message}");
-                }
-            },
-            async error =>
+        async void OnNext(int value)
+        {
+            try
             {
+                Console.WriteLine($"      -> {value}");
+
                 if (isCancel) return;
 
-                Console.WriteLine($"Stream error: {error.Message}");
-                await jsonRpc.NotifyAsync("OnError", error.Message);
-            },
-            async () =>
+                // Call back to client using notification
+                await jsonRpc.NotifyAsync("OnNextValue", value);
+                //await this.listner.OnNextValue(value);
+            }
+            catch (Exception ex)
             {
-                if (isCancel) return;
+                Console.WriteLine($"Error sending to client: {ex.Message}");
+            }
+        }
 
-                Console.WriteLine("Stream completed");
-                await jsonRpc.NotifyAsync("OnCompleted");
-            });
+        async void OnError(Exception error)
+        {
+            if (isCancel) return;
+
+            Console.WriteLine($"Stream error: {error.Message}");
+            await jsonRpc.NotifyAsync("OnError", error.Message);
+        }
+
+        async void OnCompleted()
+        {
+            if (isCancel) return;
+
+            Console.WriteLine("Stream completed");
+            await jsonRpc.NotifyAsync("OnCompleted");
+        }
     }
 }
