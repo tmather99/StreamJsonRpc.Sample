@@ -63,6 +63,9 @@ class Program
     {
         JsonRpc jsonRpc = new JsonRpc(pipe);
 
+        // Subscription to filtered observable
+        IDisposable filteredSubscription = null;
+
         try
         {
             // Handle push events from server.
@@ -72,7 +75,7 @@ class Program
             IServer server = jsonRpc.Attach<IServer>();
 
             // Register client callbacks so server can call back to us
-            var listener = new Listener();
+            Listener listener = new Listener();
             jsonRpc.AddLocalRpcTarget(listener);
 
             // Handler for server push notifications.
@@ -96,15 +99,15 @@ class Program
                 int sum = await jsonRpc.InvokeAsync<int>("AddAsync", a, b);
                 Console.WriteLine($"  Calculating {a} + {b} = {sum}");
 
-                List<string> list = await jsonRpc.InvokeAsync<List<string>>("GetListAsync");
+                List<string> list = await server.GetListAsync();
                 Console.WriteLine($"  GetList:");
                 Console.WriteLine(string.Join(Environment.NewLine, list.Select((v, i) => $"    [{i}] {v}")));
 
-                Dictionary<Guid, DateTime> dict = await jsonRpc.InvokeAsync<Dictionary<Guid, DateTime>>("GetDictionaryAsync");
+                Dictionary<Guid, DateTime> dict = await server.GetDictionaryAsync();
                 Console.WriteLine($"  GetDictionary:");
                 Console.WriteLine(string.Join(Environment.NewLine, dict.Select(kv => $"    {kv.Key}={kv.Value:O}")));
 
-                Dictionary<string, string> table = await jsonRpc.InvokeAsync<Dictionary<string, string>>("GetTableAsync");
+                Dictionary<string, string> table = await server.GetTableAsync();
                 Console.WriteLine($"  GetTable:");
                 Console.WriteLine(string.Join(Environment.NewLine, table.Select(kv => $"    {kv.Key}={kv.Value:O}")));
 
@@ -112,9 +115,11 @@ class Program
                 Console.WriteLine($"  SendTicksAsync {guid}");
 
                 // Apply Rx operators to the observable
-                var filteredSubscription =
-                    listener.Values.Where(x => x % 2 == 0)
-                        .Subscribe(x => Console.WriteLine($"           -> Even number filter: {x}"));
+                filteredSubscription = listener.Values.Where(x => x % 2 == 0)
+                    .Subscribe(x =>
+                    {
+                        Console.WriteLine($"           -> Even number filter: {x}");
+                    });
 
                 // Start subscription to server stream
                 var subscriptionTask = server.SubscribeToNumberStream();
@@ -126,6 +131,7 @@ class Program
         catch (OperationCanceledException)
         {
             await jsonRpc.InvokeAsync("CancelTickOperation", guid);
+            filteredSubscription?.Dispose();
             throw;  // rethrow to main
         }
         catch (Exception ex)

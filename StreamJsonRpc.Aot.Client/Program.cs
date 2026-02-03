@@ -2,7 +2,9 @@
 using System.Reactive.Linq;
 using Microsoft.VisualStudio.Threading;
 using StreamJsonRpc;
-using StreamJsonRpc.Aot.Client;
+using StreamJsonRpc.Aot.Common;
+
+namespace StreamJsonRpc.Aot.Client;
 
 internal class Program
 {
@@ -55,6 +57,7 @@ internal class Program
             HeaderDelimitedMessageHandler messageHandler = new(pipe, SystemTextJson.CreateFormatter());
             JsonRpc jsonRpc = new(messageHandler);
 
+            // Subscription to filtered observable
             IDisposable? filteredSubscription = null;
 
             try

@@ -1,9 +1,11 @@
 ﻿using System.Text.Json.Serialization;
 using StreamJsonRpc;
 
+namespace StreamJsonRpc.Aot.Common;
+
 // When properly configured, this formatter is safe in Native AOT scenarios for
 // the very limited use case shown in this program.
-internal static partial class SystemTextJson
+public static partial class SystemTextJson
 {
     public static IJsonRpcMessageFormatter CreateFormatter()
     {

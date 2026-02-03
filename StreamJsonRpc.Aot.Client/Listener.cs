@@ -1,4 +1,5 @@
 ﻿using System.Reactive.Subjects;
+using StreamJsonRpc.Aot.Common;
 
 namespace StreamJsonRpc.Aot.Client;
 

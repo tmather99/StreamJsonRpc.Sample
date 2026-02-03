@@ -53,6 +53,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Notify", "Notify", "{EDA3D8
 		readme.md = readme.md
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StreamJsonRpc.Aot.Common", "StreamJsonRpc.Aot.Common\StreamJsonRpc.Aot.Common.csproj", "{10B74534-4EC8-434C-A22A-667DEA323FDB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -111,6 +113,10 @@ Global
 		{BAACEC41-120B-C9A8-0902-4BEEF05ADBFB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BAACEC41-120B-C9A8-0902-4BEEF05ADBFB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BAACEC41-120B-C9A8-0902-4BEEF05ADBFB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{10B74534-4EC8-434C-A22A-667DEA323FDB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{10B74534-4EC8-434C-A22A-667DEA323FDB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{10B74534-4EC8-434C-A22A-667DEA323FDB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{10B74534-4EC8-434C-A22A-667DEA323FDB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -127,6 +133,7 @@ Global
 		{DE611607-A591-70ED-8661-5AEE2772722D} = {40F0EBA1-5464-4A6A-99DB-84F7E2629211}
 		{662D4E79-E7E9-A17F-5980-6505D0AF926D} = {EDA3D87B-FC95-4C83-8EC4-81EEA61BEC71}
 		{BAACEC41-120B-C9A8-0902-4BEEF05ADBFB} = {EDA3D87B-FC95-4C83-8EC4-81EEA61BEC71}
+		{10B74534-4EC8-434C-A22A-667DEA323FDB} = {40F0EBA1-5464-4A6A-99DB-84F7E2629211}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D362BF52-6BAF-410F-A6F8-44CD54B274F0}

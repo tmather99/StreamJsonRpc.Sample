@@ -22,4 +22,8 @@
 		<PackageReference Include="System.Reactive" Version="7.0.0-preview.1" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <ProjectReference Include="..\StreamJsonRpc.Aot.Common\StreamJsonRpc.Aot.Common.csproj" />
+	</ItemGroup>
+
 </Project>

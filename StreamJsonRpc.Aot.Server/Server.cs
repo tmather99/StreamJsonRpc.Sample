@@ -2,11 +2,12 @@
 using System.Diagnostics.Metrics;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using StreamJsonRpc.Aot.Common;
 
 namespace StreamJsonRpc.Aot.Server;
 
 // Server implementation
-internal class Server : IServer
+public class Server : IServer
 {
     private bool isCancel;
     private int tickNumber = 0;
