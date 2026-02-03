@@ -7,7 +7,7 @@ using StreamJsonRpc.Aot.Common;
 namespace StreamJsonRpc.Aot.Server;
 
 // Server implementation
-public class Server(JsonRpc jsonRpc) : IServer
+public partial class Server(JsonRpc jsonRpc) : IServer
 {
     private Guid guid;
     private bool isCancel;
@@ -65,97 +65,5 @@ public class Server(JsonRpc jsonRpc) : IServer
         _subject.Dispose();
         _subscription?.Dispose();
         _subscription = null!;
-    }
-
-    public Task<int> AddAsync(int a, int b)
-    {
-        int sum = a + b;
-        Console.WriteLine($"  Calculating: {a} + {b} = {sum}");
-        return Task.FromResult(sum);
-    }
-
-    Task<List<string>> IServer.GetListAsync()
-    {
-        Console.WriteLine("  GetListAsync.");
-        List<string> list = new List<string>
-        {
-            "alpha",
-            "beta",
-            "gamma",
-            DateTime.UtcNow.ToString("O"), // ISO 8601 round-trip format
-        };
-
-        return Task.FromResult(list);
-    }
-
-    Task<Dictionary<Guid, DateTime>> IServer.GetDictionaryAsync()
-    {
-        Console.WriteLine("  GetDictionaryAsync.");
-        Dictionary<Guid, DateTime> dict = new Dictionary<Guid, DateTime> {
-            [Guid.NewGuid()] = DateTime.UtcNow,
-            [Guid.NewGuid()] = DateTime.UtcNow.AddMinutes(-5),
-            [Guid.NewGuid()] = DateTime.UtcNow.AddDays(1),
-        };
-
-        return Task.FromResult(dict);
-    }
-
-    public Task<Dictionary<string, string>> GetTableAsync()
-    {
-        Console.WriteLine("  GetTableAsync.");
-        var table = new Dictionary<string, string> {
-            ["Name"] = "Alice",
-            ["Role"] = "Tester",
-            ["Environment"] = "Dev",
-            ["Timestamp"] = DateTime.UtcNow.ToString("O") // ISO 8601 for consistency
-        };
-
-        return Task.FromResult(table);
-    }
-
-    // Server streams data to client using notifications
-    public async Task SubscribeToNumberStream()
-    {
-        Console.WriteLine("  Client subscribed to number stream");
-
-        if (_jsonRpc == null)
-        {
-            throw new InvalidOperationException("Client RPC not set");
-        }
-
-        _subscription = _subject.Subscribe(OnNext, OnError, OnCompleted);
-
-        async void OnNext(int value)
-        {
-            try
-            {
-                Console.WriteLine($"      {value, 3} -> {guid}");
-
-                if (isCancel) return;
-
-                // Call back to client using notification
-                await _numberStreamStreamListener.OnNextValue(value);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error sending to client: {ex.Message}");
-            }
-        }
-
-        async void OnError(Exception error)
-        {
-            if (isCancel) return;
-
-            Console.WriteLine($"Stream error: {error.Message}");
-            await _numberStreamStreamListener.OnError(error.Message);
-        }
-
-        async void OnCompleted()
-        {
-            if (isCancel) return;
-
-            Console.WriteLine("Stream completed");
-            await _numberStreamStreamListener.OnCompleted();
-        }
     }
 }

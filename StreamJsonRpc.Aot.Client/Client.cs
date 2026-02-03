@@ -1,6 +1,8 @@
+using System.Collections.Generic;
 using System.IO.Pipes;
 using System.Reactive.Linq;
 using Microsoft.VisualStudio.Threading;
+using Newtonsoft.Json.Linq;
 using StreamJsonRpc;
 using StreamJsonRpc.Aot.Common;
 
@@ -67,6 +69,7 @@ internal class Client
                 await jsonRpc.NotifyAsync("SendTicksAsync", guid);
                 Console.WriteLine($"  SendTicksAsync {guid}");
 
+                // Subscribe to filtered number stream
                 filteredSubscription = await FilteredSubscriptionAsync();
 
                 // blocks until canceled via Ctrl+C.
@@ -77,11 +80,22 @@ internal class Client
             {
                 // Apply Rx operators to the observable
                 filteredSubscription = 
-                    numberStreamStreamListener.Values.Where(x => x % 2 == 0)
-                        .Subscribe(x =>
-                        {
-                            Console.WriteLine($"           -> Even number filter: {x}");
-                        });
+                    numberStreamStreamListener.Values
+                        .Where(x => x % 2 == 0)
+                        .Take(5)  // Take only first 5 values
+                        .Subscribe(
+                            x =>
+                            {
+                                Console.ForegroundColor = ConsoleColor.Cyan;
+                                Console.WriteLine($"           -> Even number filter: {x}");
+                                Console.ResetColor();
+                            },
+                            () =>
+                            {
+                                Console.ForegroundColor = ConsoleColor.Magenta;
+                                Console.WriteLine("           -> !!! Completed !!!");
+                                Console.ResetColor();
+                            });
 
                 // Start subscription to server stream
                 await server.SubscribeToNumberStream();

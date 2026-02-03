@@ -13,7 +13,7 @@ namespace StreamJsonRpc.Jit.Client
 
         public Task OnNextValue(int value)
         {
-            Console.WriteLine($"        Client received: {value}");
+            Console.WriteLine($"        OnNextValue: {value}");
             _subject.OnNext(value);
             return Task.CompletedTask;
         }
