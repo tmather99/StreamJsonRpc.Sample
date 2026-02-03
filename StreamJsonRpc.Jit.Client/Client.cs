@@ -28,7 +28,7 @@ namespace StreamJsonRpc.Jit.Client
                 IServer server = jsonRpc.Attach<IServer>();
 
                 // Register client callbacks so server can call back to us
-                Listener listener = new Listener();
+                var listener = new NumberStreamListener();
                 jsonRpc.AddLocalRpcTarget(listener);
 
                 // Handler for server push notifications.

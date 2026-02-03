@@ -35,7 +35,7 @@ internal class Client
 
             // Register client callbacks so server can call back to us
             RpcTargetMetadata targetMetadata = RpcTargetMetadata.FromShape<IListener>();
-            var listener = new Listener();
+            NumberStreamListener listener = new();
             jsonRpc.AddLocalRpcTarget(targetMetadata, listener, null);
 
             // Start listening for messages
