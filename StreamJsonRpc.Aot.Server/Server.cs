@@ -22,7 +22,9 @@ public partial class Server(JsonRpc jsonRpc) : IServer
 
     public Task<bool> ConnectAsync(Guid guid)
     {
+        Console.ForegroundColor = ConsoleColor.Green;
         Console.WriteLine($"  ClientId: {guid}");
+        Console.ResetColor();
 
         this.guid = guid;
 

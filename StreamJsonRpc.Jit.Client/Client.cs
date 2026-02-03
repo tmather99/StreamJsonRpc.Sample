@@ -68,37 +68,13 @@ namespace StreamJsonRpc.Jit.Client
                     Console.WriteLine($"  SendTicksAsync {guid}");
 
                     // Subscribe to filtered number stream
-                    filteredSubscription = await FilteredSubscriptionAsync();
-
-                    // blocks until canceled via Ctrl+C.
-                    await jsonRpc.Completion.WithCancellation(cts.Token);
-                }
-
-                async Task<IDisposable> FilteredSubscriptionAsync()
-                {
-                    // Apply Rx operators to the observable
-                    filteredSubscription =
-                        numberStreamStreamListener.Values
-                            .Where(x => x % 2 == 0)
-                            .Take(5)  // Take only first 5 values
-                            .Subscribe(
-                                x =>
-                                {
-                                    Console.ForegroundColor = ConsoleColor.Cyan;
-                                    Console.WriteLine($"           -> Even number filter: {x}");
-                                    Console.ResetColor();
-                                },
-                                () =>
-                                {
-                                    Console.ForegroundColor = ConsoleColor.Magenta;
-                                    Console.WriteLine("           -> !!! Completed !!!");
-                                    Console.ResetColor();
-                                });
+                    filteredSubscription = numberStreamStreamListener.CreateFilteredSubscription();
 
                     // Start subscription to server stream
                     await server.SubscribeToNumberStream();
 
-                    return filteredSubscription;
+                    // blocks until canceled via Ctrl+C.
+                    await jsonRpc.Completion.WithCancellation(cts.Token);
                 }
             }
             catch (OperationCanceledException)
