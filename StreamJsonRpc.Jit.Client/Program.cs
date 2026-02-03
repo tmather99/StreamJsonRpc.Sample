@@ -13,6 +13,7 @@ class Program
 {
     static Random rand = new Random();
     static Guid guid = Guid.NewGuid();
+    static bool isConnected = false;
 
     static async Task Main(string[] args)
     {
@@ -28,6 +29,12 @@ class Program
             var cts = new CancellationTokenSource();
             Console.CancelKeyPress += (s, e) =>
             {
+                if (!isConnected)
+                {
+                    Console.WriteLine("Not connected yet, exiting immediately.");
+                    return;
+                }
+
                 cts.Cancel();
                 e.Cancel = true;
                 Console.WriteLine("Canceling...");
@@ -37,6 +44,7 @@ class Program
             {
                 await stream.ConnectAsync();
                 await RunAsync(stream, cts);
+                isConnected = true;
                 Console.WriteLine("\nPress Ctrl+C to end.\n");
             }
             catch (OperationCanceledException)

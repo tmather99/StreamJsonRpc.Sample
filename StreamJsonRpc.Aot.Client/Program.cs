@@ -7,6 +7,7 @@ using StreamJsonRpc.Aot.Client;
 Guid guid = Guid.NewGuid();
 
 string pipeName = "Satori";
+bool isConnected = false;
 Console.WriteLine($"Connecting to {pipeName}...");
 using NamedPipeClientStream stream = new(serverName:".",
                                          pipeName,
@@ -16,6 +17,12 @@ using NamedPipeClientStream stream = new(serverName:".",
 var cts = new CancellationTokenSource();
 Console.CancelKeyPress += (s, e) =>
 {
+    if (!isConnected)
+    {
+        Console.WriteLine("Not connected yet, exiting immediately.");
+        return;
+    }
+
     cts.Cancel();
     e.Cancel = true;
     Console.WriteLine("Canceling...");
@@ -26,6 +33,7 @@ try
     // Connect to server.
     await stream.ConnectAsync();
     await RunAsync(stream, guid, cts);
+    isConnected = true;
     Console.WriteLine("\nPress Ctrl+C to end.\n");
 }
 catch (OperationCanceledException)
@@ -70,9 +78,9 @@ static async Task RunAsync(NamedPipeClientStream pipe, Guid guid, CancellationTo
         jsonRpc.StartListening();
 
         Console.WriteLine($"  ClientId: {guid}");
-        bool connected = await server.ConnectAsync(guid);
+        bool isConnected = await server.ConnectAsync(guid);
 
-        if (connected)
+        if (isConnected)
         {
             int a = Random.Shared.Next(0, 10);
             int b = Random.Shared.Next(0, 10);
