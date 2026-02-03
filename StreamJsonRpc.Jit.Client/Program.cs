@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.IO.Pipes;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Threading;
 using StreamJsonRpc;
+using StreamJsonRpc.Jit.Client;
 
 class Program
 {
@@ -59,6 +61,13 @@ class Program
             // Handle push events from server.
             jsonRpc.AddLocalRpcMethod("Tick", TickHandler(guid));
 
+            // Register server RPC methods
+            IServer server = jsonRpc.Attach<IServer>();
+
+            // Register client callbacks so server can call back to us
+            var listener = new Listener();
+            jsonRpc.AddLocalRpcTarget(listener);
+
             // Handler for server push notifications.
             Func<int, Task> TickHandler(Guid guid)
             {
@@ -94,6 +103,14 @@ class Program
 
                 await jsonRpc.NotifyAsync("SendTicksAsync", guid);
                 Console.WriteLine($"  SendTicksAsync {guid}");
+
+                // Apply Rx operators to the observable
+                var filteredSubscription =
+                    listener.Values.Where(x => x % 2 == 0)
+                        .Subscribe(x => Console.WriteLine($"           -> Even number filter: {x}"));
+
+                // Start subscription to server stream
+                var subscriptionTask = server.SubscribeToNumberStream();
 
                 // blocks until canceled via Ctrl+C.
                 await jsonRpc.Completion.WithCancellation(cts.Token);
