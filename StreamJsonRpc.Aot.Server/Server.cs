@@ -13,11 +13,14 @@ public class Server : IServer
     private int tickNumber = 0;
     private IDisposable? _subscription = null;
     private JsonRpc? jsonRpc = null;
+    private IListener listener;
 
     private readonly Subject<int> _subject = new();
 
-    public Server()
+    public Server(IListener listener)
     {
+        this.listener = listener;
+
         // Simulate publishing data periodically
         Observable.Interval(TimeSpan.FromMilliseconds(100))
             .Subscribe(i =>
@@ -132,8 +135,7 @@ public class Server : IServer
                 if (isCancel) return;
 
                 // Call back to client using notification
-                await jsonRpc.NotifyAsync("OnNextValue", value);
-                //await this.listner.OnNextValue(value);
+                await listener.OnNextValue(value);
             }
             catch (Exception ex)
             {
@@ -146,7 +148,7 @@ public class Server : IServer
             if (isCancel) return;
 
             Console.WriteLine($"Stream error: {error.Message}");
-            await jsonRpc.NotifyAsync("OnError", error.Message);
+            await listener.OnError(error.Message);
         }
 
         async void OnCompleted()
@@ -154,7 +156,7 @@ public class Server : IServer
             if (isCancel) return;
 
             Console.WriteLine("Stream completed");
-            await jsonRpc.NotifyAsync("OnCompleted");
+            await listener.OnCompleted();
         }
     }
 }
