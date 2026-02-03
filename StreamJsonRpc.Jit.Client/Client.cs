@@ -17,7 +17,9 @@ namespace StreamJsonRpc.Jit.Client
             JsonRpc jsonRpc = new JsonRpc(pipe);
 
             // Subscription to filtered observable
-            IDisposable filteredSubscription = null;
+            IDisposable numberSubscription = null;
+            IDisposable mouseClickSubscription = null;
+            IDisposable mouseMoveSubscription = null;
 
             try
             {
@@ -28,7 +30,7 @@ namespace StreamJsonRpc.Jit.Client
                 IServer server = jsonRpc.Attach<IServer>();
 
                 // Register client callbacks so server can call back to us
-                var numberStreamStreamListener = new NumberStreamStreamListener();
+                var numberStreamStreamListener = new NumberStreamListener();
                 jsonRpc.AddLocalRpcTarget(numberStreamStreamListener);
 
                 // Handler for server push notifications.
@@ -36,10 +38,17 @@ namespace StreamJsonRpc.Jit.Client
                 {
                     return async tickNumber =>
                     {
+                        Console.ForegroundColor = ConsoleColor.Red;
                         Console.WriteLine($"    Tick {guid} - #{tickNumber}");
+                        Console.ResetColor();
                     };
                 }
 
+                // Register client callbacks for mouse stream
+                var mouseStreamListener = new MouseStreamListener();
+                jsonRpc.AddLocalRpcTarget(mouseStreamListener);
+
+                // Start listening for messages
                 jsonRpc.StartListening();
 
                 Console.WriteLine($"  ClientId: {guid}");
@@ -49,7 +58,7 @@ namespace StreamJsonRpc.Jit.Client
                 {
                     int a = Program.rand.Next(1, 10);
                     int b = Program.rand.Next(1, 10);
-                    int sum = await jsonRpc.InvokeAsync<int>("AddAsync", a, b);
+                    int sum = await server.AddAsync(a, b);
                     Console.WriteLine($"  Calculating {a} + {b} = {sum}");
 
                     List<string> list = await server.GetListAsync();
@@ -64,14 +73,22 @@ namespace StreamJsonRpc.Jit.Client
                     Console.WriteLine($"  GetTable:");
                     Console.WriteLine(string.Join(Environment.NewLine, table.Select(kv => $"    {kv.Key}={kv.Value:O}")));
 
-                    await jsonRpc.NotifyAsync("SendTicksAsync", guid);
-                    Console.WriteLine($"  SendTicksAsync {guid}");
+                // Start server hearbeat ticks
+                await jsonRpc.NotifyAsync("SendTicksAsync", guid);
+                Console.WriteLine($"  SendTicksAsync {guid}");
 
                     // Subscribe to filtered number stream
-                    filteredSubscription = numberStreamStreamListener.CreateFilteredSubscription();
+                    numberSubscription = numberStreamStreamListener.CreateFilteredSubscription();
 
                     // Start subscription to server stream
                     await server.SubscribeToNumberStream();
+
+                    // Subscribe to mouse events
+                    mouseClickSubscription = mouseStreamListener.CreateClickSubscription();
+                    mouseMoveSubscription = mouseStreamListener.CreateMovementSubscription();
+
+                    // Register to mouse events
+                    await server.SubscribeToMouseStream();
 
                     // blocks until canceled via Ctrl+C.
                     await jsonRpc.Completion.WithCancellation(cts.Token);
@@ -80,7 +97,8 @@ namespace StreamJsonRpc.Jit.Client
             catch (OperationCanceledException)
             {
                 await jsonRpc.InvokeAsync("CancelTickOperation", guid);
-                filteredSubscription?.Dispose();
+                mouseClickSubscription?.Dispose();
+                mouseMoveSubscription?.Dispose();
                 throw;  // rethrow to main
             }
             catch (Exception ex)

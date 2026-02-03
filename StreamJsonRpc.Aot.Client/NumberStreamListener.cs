@@ -5,7 +5,7 @@ using StreamJsonRpc.Aot.Common;
 namespace StreamJsonRpc.Aot.Client;
 
 // Client-side implementation that receives callbacks from server
-public class NumberStreamStreamListener : INumberStreamStreamListener
+public class NumberStreamListener : INumberStreamListener
 {
     private readonly Subject<int> _subject = new Subject<int>();
 
@@ -13,21 +13,23 @@ public class NumberStreamStreamListener : INumberStreamStreamListener
 
     public Task OnNextValue(int value)
     {
-        Console.WriteLine($"        OnNextValue: {value}");
+        Console.ForegroundColor = ConsoleColor.DarkGray;
+        Console.WriteLine($"        NumberStreamListener - OnNextValue: {value}");
+        Console.ResetColor();
         _subject.OnNext(value);
         return Task.CompletedTask;
     }
 
     public Task OnError(string error)
     {
-        Console.WriteLine($"        Stream error: {error}");
+        Console.WriteLine($"        NumberStreamListener - Stream error: {error}");
         _subject.OnError(new Exception(error));
         return Task.CompletedTask;
     }
 
     public Task OnCompleted()
     {
-        Console.WriteLine("        Stream completed");
+        Console.WriteLine("        NumberStreamListener - Stream completed");
         _subject.OnCompleted();
         return Task.CompletedTask;
     }
@@ -41,7 +43,7 @@ public class NumberStreamStreamListener : INumberStreamStreamListener
             .Subscribe(
                 x =>
                 {
-                    Console.ForegroundColor = ConsoleColor.Cyan;
+                    Console.ForegroundColor = ConsoleColor.Blue;
                     Console.WriteLine($"           -> Even number filter: {x}");
                     Console.ResetColor();
                 },

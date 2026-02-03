@@ -19,4 +19,5 @@ public partial interface IServer
     Task CancelTickOperation(Guid guid);
 
     Task SubscribeToNumberStream();
+    Task SubscribeToMouseStream();
 }

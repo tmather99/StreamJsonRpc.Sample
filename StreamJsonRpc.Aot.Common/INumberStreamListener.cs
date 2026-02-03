@@ -7,6 +7,6 @@ namespace StreamJsonRpc.Aot.Common;
 
 // Concrete interface
 [JsonRpcContract, GenerateShape(IncludeMethods = MethodShapeFlags.PublicInstance)]
-public partial interface INumberStreamStreamListener : IStreamListener<int>
+public partial interface INumberStreamListener : IStreamListener<int>
 {
 }

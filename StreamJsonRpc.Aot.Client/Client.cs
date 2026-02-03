@@ -16,7 +16,9 @@ internal class Client
         JsonRpc jsonRpc = new(messageHandler);
 
         // Subscription to filtered observable
-        IDisposable? filteredSubscription = null;
+        IDisposable? numberSubscription = null;
+        IDisposable? mouseClickSubscription = null;
+        IDisposable? mouseMoveSubscription = null;
 
         try
         {
@@ -28,7 +30,9 @@ internal class Client
             {
                 return async tickNumber =>
                 {
+                    Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine($"    Tick {guid} - #{tickNumber}");
+                    Console.ResetColor();
                 };
             }
 
@@ -36,9 +40,14 @@ internal class Client
             IServer server = jsonRpc.Attach<IServer>();
 
             // Register client callbacks so server can call back to us
-            RpcTargetMetadata targetMetadata = RpcTargetMetadata.FromShape<INumberStreamStreamListener>();
-            NumberStreamStreamListener numberStreamStreamListener = new();
-            jsonRpc.AddLocalRpcTarget(targetMetadata, numberStreamStreamListener, null);
+            RpcTargetMetadata targetMetadata = RpcTargetMetadata.FromShape<INumberStreamListener>();
+            NumberStreamListener numberStreamListener = new();
+            jsonRpc.AddLocalRpcTarget(targetMetadata, numberStreamListener, null);
+
+            // Register client callbacks for mouse stream
+            RpcTargetMetadata mouseTargetMetadata = RpcTargetMetadata.FromShape<IMouseStreamListener>();
+            MouseStreamListener mouseStreamListener = new();
+            jsonRpc.AddLocalRpcTarget(mouseTargetMetadata, mouseStreamListener, null);
 
             // Start listening for messages
             jsonRpc.StartListening();
@@ -70,10 +79,17 @@ internal class Client
                 Console.WriteLine($"  SendTicksAsync {guid}");
 
                 // Subscribe to filtered number stream
-                filteredSubscription = numberStreamStreamListener.CreateFilteredSubscription();
+                numberSubscription = numberStreamListener.CreateFilteredSubscription();
 
                 // Start subscription to server stream
                 await server.SubscribeToNumberStream();
+
+                // Subscribe to mouse events
+                mouseClickSubscription = mouseStreamListener.CreateClickSubscription();
+                mouseMoveSubscription = mouseStreamListener.CreateMovementSubscription();
+
+                // Register to mouse events
+                await server.SubscribeToMouseStream();
 
                 // blocks until canceled via Ctrl+C.
                 await jsonRpc.Completion.WithCancellation(cts.Token);
@@ -82,7 +98,9 @@ internal class Client
         catch (OperationCanceledException)
         {
             await jsonRpc.InvokeAsync("CancelTickOperation", guid);
-            filteredSubscription?.Dispose();
+            numberSubscription?.Dispose();
+            mouseClickSubscription?.Dispose();
+            mouseMoveSubscription?.Dispose();
             throw;  // rethrow to main
         }
         catch (Exception ex)

@@ -26,7 +26,7 @@ public partial class Server
                 if (isCancel) return;
 
                 // Call back to client using notification
-                await _numberStreamStreamListener.OnNextValue(value);
+                await _numberStreamListener.OnNextValue(value);
             }
             catch (Exception ex)
             {
@@ -39,7 +39,7 @@ public partial class Server
             if (isCancel) return;
 
             Console.WriteLine($"Stream error: {error.Message}");
-            await _numberStreamStreamListener.OnError(error.Message);
+            await _numberStreamListener.OnError(error.Message);
         }
 
         async void OnCompleted()
@@ -47,7 +47,7 @@ public partial class Server
             if (isCancel) return;
 
             Console.WriteLine("Stream completed");
-            await _numberStreamStreamListener.OnCompleted();
+            await _numberStreamListener.OnCompleted();
         }
     }
 }

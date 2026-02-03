@@ -18,9 +18,10 @@ public partial class Server(JsonRpc jsonRpc) : IServer
     private readonly Subject<int> _subject = new();
 
     private readonly JsonRpc _jsonRpc = jsonRpc;
-    private readonly INumberStreamStreamListener _numberStreamStreamListener = jsonRpc.Attach<INumberStreamStreamListener>();
+    private readonly INumberStreamListener _numberStreamListener = jsonRpc.Attach<INumberStreamListener>();
+    private readonly IMouseStreamListener _mouseStreamListener = jsonRpc.Attach<IMouseStreamListener>();
 
-    public Task<bool> ConnectAsync(Guid guid)
+    public async Task<bool> ConnectAsync(Guid guid)
     {
         Console.ForegroundColor = ConsoleColor.Green;
         Console.WriteLine($"  ClientId: {guid}");
@@ -37,7 +38,7 @@ public partial class Server(JsonRpc jsonRpc) : IServer
                        _subject.OnNext(r);
                    });
 
-        return Task.FromResult(true);
+        return true;
     }
 
     public Task CancelTickOperation(Guid guid)
@@ -60,7 +61,9 @@ public partial class Server(JsonRpc jsonRpc) : IServer
         {
             // Send notification with tick number sequence per client
             await _jsonRpc.NotifyAsync("Tick", ++tickNumber);
+            Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine($"    Notify clientId {guid} - #{tickNumber}");
+            Console.ResetColor();
             await Task.Delay(1000);
         }
 

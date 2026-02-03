@@ -25,5 +25,7 @@ public static partial class SystemTextJson
     [JsonSerializable(typeof(List<string>))]
     [JsonSerializable(typeof(Dictionary<Guid, DateTime>))]
     [JsonSerializable(typeof(Dictionary<string, string>))]
+    [JsonSerializable(typeof(Dictionary<int, MouseAction>))]
+    [JsonSerializable(typeof(Dictionary<int, MouseEventData>))]
     private partial class SourceGenerationContext : JsonSerializerContext;
 }

@@ -5,23 +5,60 @@ using StreamJsonRpc.Aot.Common;
 
 internal class Program
 {
+    private static MouseCaptureService? _mouseCaptureService;
+
     internal static async Task Main(string[] args)
     {
         string pipeName = "Satori";
         int clientRequests = 0;
 
-        while (true)
+        // Start global mouse capture at application startup
+        Console.WriteLine("Starting global mouse capture service...");
+        _mouseCaptureService = new MouseCaptureService(Server.PublishMouseEventGlobal);
+        
+        _ = Task.Run(async () =>
         {
-            await Console.Error.WriteLineAsync($"\nWaiting for client to make on {pipeName}...\n");
+            try
+            {
+                await _mouseCaptureService.StartAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to start mouse capture: {ex.Message}");
+            }
+        });
 
-            NamedPipeServerStream stream = new(pipeName,
-                PipeDirection.InOut,
-                NamedPipeServerStream.MaxAllowedServerInstances,
-                PipeTransmissionMode.Byte,
-                PipeOptions.Asynchronous);
+        // Handle Ctrl+C for graceful shutdown
+        Console.CancelKeyPress += (sender, e) =>
+        {
+            Console.WriteLine("\nShutting down mouse capture service...");
+            _mouseCaptureService?.Stop();
+            _mouseCaptureService?.Dispose();
+            e.Cancel = false;
+        };
 
-            await stream.WaitForConnectionAsync();
-            await RunAsync(stream, ++clientRequests);
+        try
+        {
+            while (true)
+            {
+                await Console.Error.WriteLineAsync($"\nWaiting for client to make on {pipeName}...\n");
+
+                NamedPipeServerStream stream = new(pipeName,
+                    PipeDirection.InOut,
+                    NamedPipeServerStream.MaxAllowedServerInstances,
+                    PipeTransmissionMode.Byte,
+                    PipeOptions.Asynchronous);
+
+                await stream.WaitForConnectionAsync();
+                await RunAsync(stream, ++clientRequests);
+            }
+        }
+        finally
+        {
+            // Cleanup on application exit
+            Console.WriteLine("\nApplication shutting down...");
+            _mouseCaptureService?.Stop();
+            _mouseCaptureService?.Dispose();
         }
 
         static async Task RunAsync(NamedPipeServerStream pipe, int requestId)
@@ -52,4 +89,3 @@ internal class Program
         }
     }
 }
-    
