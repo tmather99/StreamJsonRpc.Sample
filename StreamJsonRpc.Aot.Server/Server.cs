@@ -55,6 +55,7 @@ public class Server(JsonRpc jsonRpc) : IServer
 
         while (!isCancel)
         {
+            // Send notification with tick number sequence per client
             await jsonRpc.NotifyAsync("Tick", ++tickNumber);
             Console.WriteLine($"    Notify clientId {guid} - #{tickNumber}");
             await Task.Delay(1000);
