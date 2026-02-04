@@ -6,6 +6,8 @@ using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Threading;
+using PolyType;
+using PolyType.ReflectionProvider;
 using StreamJsonRpc;
 
 namespace StreamJsonRpc.Jit.Client
@@ -14,7 +16,8 @@ namespace StreamJsonRpc.Jit.Client
     {
         public static async Task RunAsync(NamedPipeClientStream pipe, Guid guid, CancellationTokenSource cts)
         {
-            JsonRpc jsonRpc = new JsonRpc(pipe);
+            // Create the JSON-RPC client over the pipe with MessagePack serialization
+            JsonRpc jsonRpc = new(MessagePackHandler.Create(pipe));
 
             // Subscription to filtered observable
             IDisposable numberSubscription = null;

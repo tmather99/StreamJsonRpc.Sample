@@ -12,8 +12,7 @@ internal class Client
 {
     public static async Task RunAsync(NamedPipeClientStream pipe, Guid guid, CancellationTokenSource cts)
     {
-        HeaderDelimitedMessageHandler messageHandler = new(pipe, SystemTextJson.CreateFormatter());
-        JsonRpc jsonRpc = new(messageHandler);
+        JsonRpc jsonRpc = null!;
 
         // Subscription to filtered observable
         IDisposable? numberSubscription = null;
@@ -22,6 +21,9 @@ internal class Client
 
         try
         {
+            // Create the MessagePack handler over the pipe
+            jsonRpc = new(MessagePackHandler.Create(pipe));
+
             // Handle push events from server.
             jsonRpc.AddLocalRpcMethod("Tick", TickHandler());
 

@@ -1,7 +1,7 @@
 ﻿using System.IO.Pipes;
 using StreamJsonRpc;
-using StreamJsonRpc.Aot.Server;
 using StreamJsonRpc.Aot.Common;
+using StreamJsonRpc.Aot.Server;
 
 internal class Program
 {
@@ -71,9 +71,11 @@ internal class Program
         {
             await Console.Error.WriteLineAsync($"  Connection request #{requestId} received.");
 
-            HeaderDelimitedMessageHandler messageHandler = new(pipe, SystemTextJson.CreateFormatter());
-            JsonRpc jsonRpc = new(messageHandler);
-            jsonRpc.CancelLocallyInvokedMethodsWhenConnectionIsClosed = true;
+            // Set up JSON-RPC over the named pipe
+            JsonRpc jsonRpc = new(MessagePackHandler.Create(pipe)) 
+            {
+                CancelLocallyInvokedMethodsWhenConnectionIsClosed = true
+            };
 
             jsonRpc.Disconnected += static async delegate (object? o, JsonRpcDisconnectedEventArgs e)
             {
@@ -94,4 +96,6 @@ internal class Program
             await Console.Error.WriteLineAsync($"  Request #{requestId} terminated.");
         }
     }
+    
+
 }
