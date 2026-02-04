@@ -1,6 +1,7 @@
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using StreamJsonRpc.Aot.Common;
+using StreamJsonRpc.Aot.Common.MouseStream;
 
 namespace StreamJsonRpc.Aot.Client;
 

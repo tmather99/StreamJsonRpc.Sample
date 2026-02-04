@@ -1,7 +1,7 @@
 using System;
 using SharpHook;
 using SharpHook.Native;
-using StreamJsonRpc.Aot.Common;
+using StreamJsonRpc.Aot.Common.MouseStream;
 
 namespace StreamJsonRpc.Aot.Server;
 

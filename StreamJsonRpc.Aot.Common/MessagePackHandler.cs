@@ -2,6 +2,7 @@
 using System.Text.Json.Serialization;
 using Microsoft;
 using PolyType;
+using StreamJsonRpc.Aot.Common.MouseStream;
 
 namespace StreamJsonRpc.Aot.Common;
 

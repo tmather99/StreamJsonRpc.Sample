@@ -1,6 +1,6 @@
 using System.Runtime.Serialization;
 
-namespace StreamJsonRpc.Aot.Common;
+namespace StreamJsonRpc.Aot.Common.MouseStream;
 
 [DataContract]
 public class MouseEventData
