@@ -12,36 +12,23 @@ internal class Program
         string pipeName = "Satori";
         int clientRequests = 0;
 
-        // Start global mouse capture at application startup
-        Console.WriteLine("Starting global mouse capture service...");
-        _mouseCaptureService = new MouseCaptureService(Server.PublishMouseEventGlobal);
-        
-        _ = Task.Run(async () =>
-        {
-            try
-            {
-                await _mouseCaptureService.StartAsync();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Failed to start mouse capture: {ex.Message}");
-            }
-        });
-
-        // Handle Ctrl+C for graceful shutdown
-        Console.CancelKeyPress += (sender, e) =>
-        {
-            Console.WriteLine("\nShutting down mouse capture service...");
-            _mouseCaptureService?.Stop();
-            _mouseCaptureService?.Dispose();
-            e.Cancel = false;
-        };
-
         try
         {
+            // Start global mouse capture at application startup
+            StartMouseCaptureService();
+
+            // Handle Ctrl+C for graceful shutdown
+            Console.CancelKeyPress += (sender, e) =>
+            {
+                Console.WriteLine("\nShutting down mouse capture service...");
+                _mouseCaptureService?.Stop();
+                _mouseCaptureService?.Dispose();
+                e.Cancel = false;
+            };
+
             while (true)
             {
-                await Console.Error.WriteLineAsync($"\nWaiting for client to make on {pipeName}...\n");
+                await Console.Error.WriteLineAsync($"\nWaiting on pipeName: {pipeName}...");
 
                 NamedPipeServerStream stream = new(pipeName,
                     PipeDirection.InOut,
@@ -61,6 +48,25 @@ internal class Program
             _mouseCaptureService?.Dispose();
         }
 
+        // Start the mouse capture service
+        static void StartMouseCaptureService()
+        {
+            _mouseCaptureService = new MouseCaptureService(Server.PublishMouseEventGlobal);
+            
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await _mouseCaptureService.StartAsync();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Failed to start mouse capture: {ex.Message}");
+                }
+            });
+        }
+
+        // Handle each client connection
         static async Task RunAsync(NamedPipeServerStream pipe, int requestId)
         {
             await Console.Error.WriteLineAsync($"  Connection request #{requestId} received.");
