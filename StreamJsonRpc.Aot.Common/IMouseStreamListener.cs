@@ -1,5 +1,4 @@
 using PolyType;
-using StreamJsonRpc;
 
 namespace StreamJsonRpc.Aot.Common;
 

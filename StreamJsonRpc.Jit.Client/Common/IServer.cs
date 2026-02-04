@@ -13,6 +13,9 @@ namespace StreamJsonRpc.Jit.Client
         Task<Dictionary<Guid, DateTime>> GetDictionaryAsync();
         Task<Dictionary<string, string>> GetTableAsync();
 
+        Task SetObserver(IObserver<int> observer);
+        Task<IObserver<int>> GetObserver();
+
         Task SendTicksAsync(Guid guid);
         Task CancelTickOperation(Guid guid);
 

@@ -1,5 +1,3 @@
-using System;
-
 namespace StreamJsonRpc.Aot.Server;
 
 // Server implementation - Number Stream functionality

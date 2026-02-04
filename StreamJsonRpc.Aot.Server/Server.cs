@@ -1,6 +1,4 @@
-﻿using System;
-using System.Diagnostics.Metrics;
-using System.Reactive.Linq;
+﻿using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using StreamJsonRpc.Aot.Common;
 
@@ -16,6 +14,8 @@ public partial class Server(JsonRpc jsonRpc) : IServer
     // for cleanup when RPC request is canceled
     private IDisposable _subscription = null!;
     private readonly Subject<int> _subject = new();
+
+    private readonly List<IObserver<int>> observers = [];
 
     private readonly JsonRpc _jsonRpc = jsonRpc;
     private readonly INumberStreamListener _numberStreamListener = jsonRpc.Attach<INumberStreamListener>();

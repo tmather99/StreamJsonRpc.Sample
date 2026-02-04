@@ -6,8 +6,6 @@ using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Threading;
-using PolyType;
-using PolyType.ReflectionProvider;
 using StreamJsonRpc;
 
 namespace StreamJsonRpc.Jit.Client
@@ -55,30 +53,16 @@ namespace StreamJsonRpc.Jit.Client
                 jsonRpc.StartListening();
 
                 Console.WriteLine($"  ClientId: {guid}");
-                Program.isConnected = await jsonRpc.InvokeAsync<bool>("ConnectAsync", guid);
+                Program.isConnected = await server.ConnectAsync(guid);
 
                 if (Program.isConnected)
                 {
-                    int a = Program.rand.Next(1, 10);
-                    int b = Program.rand.Next(1, 10);
-                    int sum = await server.AddAsync(a, b);
-                    Console.WriteLine($"  Calculating {a} + {b} = {sum}");
+                    // Test various data type marshaling
+                    await CheckDataTypeMarshaling(server);
 
-                    List<string> list = await server.GetListAsync();
-                    Console.WriteLine($"  GetList:");
-                    Console.WriteLine(string.Join(Environment.NewLine, list.Select((v, i) => $"    [{i}] {v}")));
-
-                    Dictionary<Guid, DateTime> dict = await server.GetDictionaryAsync();
-                    Console.WriteLine($"  GetDictionary:");
-                    Console.WriteLine(string.Join(Environment.NewLine, dict.Select(kv => $"    {kv.Key}={kv.Value:O}")));
-
-                    Dictionary<string, string> table = await server.GetTableAsync();
-                    Console.WriteLine($"  GetTable:");
-                    Console.WriteLine(string.Join(Environment.NewLine, table.Select(kv => $"    {kv.Key}={kv.Value:O}")));
-
-                // Start server hearbeat ticks
-                await jsonRpc.NotifyAsync("SendTicksAsync", guid);
-                Console.WriteLine($"  SendTicksAsync {guid}");
+                    // Start server hearbeat ticks
+                    await jsonRpc.NotifyAsync("SendTicksAsync", guid);
+                    Console.WriteLine($"  SendTicksAsync {guid}");
 
                     // Subscribe to filtered number stream
                     numberSubscription = numberStreamStreamListener.CreateFilteredSubscription();
@@ -107,6 +91,39 @@ namespace StreamJsonRpc.Jit.Client
             catch (Exception ex)
             {
                 Console.WriteLine($"Error: {ex.Message}");
+            }
+
+            // StreamJsonRpc object marshaling
+            async Task CheckDataTypeMarshaling(IServer server)
+            {
+                int a = Program.rand.Next(1, 10);
+                int b = Program.rand.Next(1, 10);
+                int sum = await server.AddAsync(a, b);
+                Console.WriteLine($"  Calculating {a} + {b} = {sum}");
+
+                List<string> list = await server.GetListAsync();
+                Console.WriteLine($"  GetList:");
+                Console.WriteLine(string.Join(Environment.NewLine, list.Select((v, i) => $"    [{i}] {v}")));
+
+                Dictionary<Guid, DateTime> dict = await server.GetDictionaryAsync();
+                Console.WriteLine($"  GetDictionary:");
+                Console.WriteLine(string.Join(Environment.NewLine, dict.Select(kv => $"    {kv.Key}={kv.Value:O}")));
+
+                Dictionary<string, string> table = await server.GetTableAsync();
+                Console.WriteLine($"  GetTable:");
+                Console.WriteLine(string.Join(Environment.NewLine, table.Select(kv => $"    {kv.Key}={kv.Value:O}")));
+
+                await server.SetObserver(new CounterObserver());
+                Console.WriteLine($"SetObserver.");
+
+                IObserver<int> observer = await server.GetObserver();
+                Console.WriteLine($"GetObserver.");
+
+                Observable.Interval(TimeSpan.FromMilliseconds(500))
+                    .Subscribe(i =>
+                    {
+                        observer.OnNext(-1);
+                    });
             }
         }
     }

@@ -1,4 +1,4 @@
-using System;
+using System.Reactive.Linq;
 using StreamJsonRpc.Aot.Common;
 
 namespace StreamJsonRpc.Aot.Server;
@@ -50,5 +50,33 @@ public partial class Server
         };
 
         return Task.FromResult(table);
+    }
+
+    public Task SetObserver(IObserver<int> observer)
+    {
+        Console.WriteLine("  Subscribe");
+
+        lock (this.observers)
+        {
+            this.observers.Add(observer);
+
+            Observable.Interval(TimeSpan.FromMilliseconds(300))
+                .Subscribe(i =>
+                {
+                    if (isCancel) return;
+                    int r = Random.Shared.Next(1, 100);
+                    Console.WriteLine($"  CounterObserver - OnNext: {r}");
+                    observer.OnNext(r);
+                });
+        }
+
+        return Task.CompletedTask;
+    }
+
+    public Task<IObserver<int>> GetObserver()
+    {
+        Console.WriteLine("  GetObservable");
+
+        return Task.FromResult(observers.First());
     }
 }

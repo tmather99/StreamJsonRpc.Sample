@@ -1,5 +1,4 @@
 ﻿using PolyType;
-using StreamJsonRpc;
 
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("StreamJsonRpc.Aot.Server")]
 

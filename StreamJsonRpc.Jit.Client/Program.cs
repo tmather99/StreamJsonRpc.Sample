@@ -2,7 +2,6 @@
 using System.IO.Pipes;
 using System.Threading;
 using System.Threading.Tasks;
-using StreamJsonRpc.Jit.Client;
 
 namespace StreamJsonRpc.Jit.Client
 {

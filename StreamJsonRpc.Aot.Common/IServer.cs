@@ -1,5 +1,4 @@
 ﻿using PolyType;
-using StreamJsonRpc;
 
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("StreamJsonRpc.Aot.Client")]
 
@@ -14,6 +13,9 @@ public partial interface IServer
     Task<List<string>> GetListAsync();
     Task<Dictionary<Guid, DateTime>> GetDictionaryAsync();
     Task<Dictionary<string, string>> GetTableAsync();
+
+    Task SetObserver(IObserver<int> observer);
+    Task<IObserver<int>> GetObserver();
 
     Task SendTicksAsync(Guid guid);
     Task CancelTickOperation(Guid guid);

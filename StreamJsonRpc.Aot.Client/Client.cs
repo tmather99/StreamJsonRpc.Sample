@@ -1,8 +1,6 @@
-using System.Collections.Generic;
 using System.IO.Pipes;
 using System.Reactive.Linq;
 using Microsoft.VisualStudio.Threading;
-using Newtonsoft.Json.Linq;
 using StreamJsonRpc;
 using StreamJsonRpc.Aot.Common;
 
@@ -59,22 +57,8 @@ internal class Client
 
             if (Program.isConnected)
             {
-                int a = Random.Shared.Next(0, 10);
-                int b = Random.Shared.Next(0, 10);
-                int sum = await server.AddAsync(a, b);
-                Console.WriteLine($"  Calculating {a} + {b} = {sum}");
-
-                List<string> list = await server.GetListAsync();
-                Console.WriteLine($"  GetList:");
-                Console.WriteLine(string.Join(Environment.NewLine, list.Select((v, i) => $"    [{i}] {v}")));
-
-                Dictionary<Guid, DateTime> dict = await server.GetDictionaryAsync();
-                Console.WriteLine($"  GetDictionary:");
-                Console.WriteLine(string.Join(Environment.NewLine, dict.Select(kv => $"    {kv.Key}={kv.Value:O}")));
-
-                Dictionary<string, string> table = await server.GetTableAsync();
-                Console.WriteLine($"  GetTable:");
-                Console.WriteLine(string.Join(Environment.NewLine, table.Select(kv => $"    {kv.Key}={kv.Value:O}")));
+                // Test various data type marshaling
+                await CheckDataTypeMarshaling(server);
 
                 // Start server hearbeat ticks
                 await jsonRpc.NotifyAsync("SendTicksAsync", guid);
@@ -108,6 +92,39 @@ internal class Client
         catch (Exception ex)
         {
             Console.WriteLine($"Error: {ex.Message}");
+        }
+
+        // StreamJsonRpc object marshaling
+        async Task CheckDataTypeMarshaling(IServer server)
+        {
+            int a = Random.Shared.Next(0, 10);
+            int b = Random.Shared.Next(0, 10);
+            int sum = await server.AddAsync(a, b);
+            Console.WriteLine($"  Calculating {a} + {b} = {sum}");
+
+            List<string> list = await server.GetListAsync();
+            Console.WriteLine($"  GetList:");
+            Console.WriteLine(string.Join(Environment.NewLine, list.Select((v, i) => $"    [{i}] {v}")));
+
+            Dictionary<Guid, DateTime> dict = await server.GetDictionaryAsync();
+            Console.WriteLine($"  GetDictionary:");
+            Console.WriteLine(string.Join(Environment.NewLine, dict.Select(kv => $"    {kv.Key}={kv.Value:O}")));
+
+            Dictionary<string, string> table = await server.GetTableAsync();
+            Console.WriteLine($"  GetTable:");
+            Console.WriteLine(string.Join(Environment.NewLine, table.Select(kv => $"    {kv.Key}={kv.Value:O}")));
+
+            await server.SetObserver(new CounterObserver());
+            Console.WriteLine($"SetObserver.");
+
+            IObserver<int> observer = await server.GetObserver();
+            Console.WriteLine($"GetObserver.");
+
+            Observable.Interval(TimeSpan.FromMilliseconds(500))
+                .Subscribe(i =>
+                {
+                    observer.OnNext(-1);
+                });
         }
     }
 }   
