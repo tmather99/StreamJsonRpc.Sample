@@ -1,32 +1,31 @@
 ﻿using System;
 
-namespace StreamJsonRpc.Jit.Client
+namespace StreamJsonRpc.Jit.Client;
+
+public class CounterObserver : IObserver<int>
 {
-    public class CounterObserver : IObserver<int>
+    public void OnNext(int value)
     {
-        public void OnNext(int value)
+        if (value != -1)
         {
-            if (value != -1)
-            {
-                Console.ForegroundColor = ConsoleColor.DarkMagenta;
-                Console.WriteLine($"        CounterObserver - OnNext Couter = {value}");
-                Console.ResetColor();
-                return;
-            }
-
-            Console.ForegroundColor = ConsoleColor.Magenta;
-            Console.WriteLine("        CounterObserver - Value inserted by client.");
+            Console.ForegroundColor = ConsoleColor.DarkMagenta;
+            Console.WriteLine($"        CounterObserver - OnNext Couter = {value}");
             Console.ResetColor();
+            return;
         }
 
-        public void OnCompleted()
-        {
-            Console.WriteLine("         CounterObserver - Counter completed.");
-        }
+        Console.ForegroundColor = ConsoleColor.Magenta;
+        Console.WriteLine("        CounterObserver - Value inserted by client.");
+        Console.ResetColor();
+    }
 
-        public void OnError(Exception error)
-        {
-            Console.WriteLine($"        CounterObserver - Counter error: {error.Message}");
-        }
+    public void OnCompleted()
+    {
+        Console.WriteLine("         CounterObserver - Counter completed.");
+    }
+
+    public void OnError(Exception error)
+    {
+        Console.WriteLine($"        CounterObserver - Counter error: {error.Message}");
     }
 }

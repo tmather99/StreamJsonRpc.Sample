@@ -1,7 +1,6 @@
-﻿namespace StreamJsonRpc.Jit.Client
+﻿namespace StreamJsonRpc.Jit.Client;
+
+// Concrete interface
+public interface INumberStreamListener : IStreamListener<int>
 {
-    // Concrete interface
-    public interface INumberStreamListener : IStreamListener<int>
-    {
-    }
 }
