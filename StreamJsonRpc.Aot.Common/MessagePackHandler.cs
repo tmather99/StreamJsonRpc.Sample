@@ -28,11 +28,6 @@ public static partial class NerdbankMessagePack
         };
     }
 
-    [GenerateShapeFor<string>]
-    [GenerateShapeFor<bool>]
-    [GenerateShapeFor<int>]
-    [GenerateShapeFor<long>]
-    [GenerateShapeFor<double>]
     [GenerateShapeFor<Guid>]
     [GenerateShapeFor<List<string>>]
     [GenerateShapeFor<Dictionary<Guid, DateTime>>]
@@ -53,11 +48,6 @@ public static partial class SystemTextJson
         };
     }
 
-    [JsonSerializable(typeof(string))]
-    [JsonSerializable(typeof(bool))]
-    [JsonSerializable(typeof(int))]
-    [JsonSerializable(typeof(long))]
-    [JsonSerializable(typeof(double))]
     [JsonSerializable(typeof(Guid))]
     [JsonSerializable(typeof(List<string>))]
     [JsonSerializable(typeof(Dictionary<Guid, DateTime>))]
