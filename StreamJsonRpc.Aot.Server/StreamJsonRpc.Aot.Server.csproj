@@ -15,6 +15,8 @@
 		<LangVersion>latest</LangVersion>
 		<NoWarn>$(NoWarn);IL2026;IL3050</NoWarn>
 		<NoWarn>$(NoWarn);StreamJsonRpc0003</NoWarn>
+		<TrimmerSingleWarn>false</TrimmerSingleWarn>
+		<NoWarn>$(NoWarn);IL2060;IL2091;IL2066;IL2072;IL2055;IL2070;IL2071;IL2067;IL2075;IL2057;IL2090;IL2080;IL2111</NoWarn>
 	</PropertyGroup>
 
 	<ItemGroup>

@@ -1,4 +1,5 @@
 using System.Reactive.Linq;
+using System.Runtime.CompilerServices;
 using StreamJsonRpc.Aot.Common;
 
 namespace StreamJsonRpc.Aot.Server;
@@ -52,7 +53,7 @@ public partial class Server : IServer
         return Task.FromResult(table);
     }
 
-    public Task SetObserver(IObserver<int> observer)
+    public Task SetObserver(IObserver<int> observer, CancellationToken ct)
     {
         Console.WriteLine("  Subscribe");
 
@@ -64,6 +65,7 @@ public partial class Server : IServer
                 .Subscribe(i =>
                 {
                     if (isCancel) return;
+                    ct.ThrowIfCancellationRequested();
                     int r = Random.Shared.Next(1, 100);
                     Console.WriteLine($"  CounterObserver - OnNext: {r}");
                     observer.OnNext(r);
@@ -73,12 +75,44 @@ public partial class Server : IServer
         return Task.CompletedTask;
     }
 
-    public Task<IObserver<int>> GetObserver()
+    public Task<IObserver<int>> GetObserver(CancellationToken ct)
     {
         Console.WriteLine("  GetObservable");
-
+        ct.ThrowIfCancellationRequested();
         return Task.FromResult(observers.First());
     }
+    
+    public async Task SetAsyncEnumerable(IAsyncEnumerable<int> values, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(values);
 
+        Console.WriteLine("  SetAsyncEnumerable.");
 
+        await foreach (int value in values.WithCancellation(ct))
+        {
+            Console.WriteLine($"    Received value: {value}");
+        }
+    }
+
+    public Task<IAsyncEnumerable<int>> GetAsyncEnumerable(CancellationToken ct)
+    {
+        Console.WriteLine("  GetAsyncEnumerable.");
+
+        IAsyncEnumerable<int> Stream()
+        {
+            return GetValues(ct);
+        }
+
+        return Task.FromResult(Stream());
+
+        async IAsyncEnumerable<int> GetValues([EnumeratorCancellation] CancellationToken ct)
+        {
+            for (int i = 1; i <= 20; i++)
+            {
+                ct.ThrowIfCancellationRequested();
+                await Task.Yield();
+                yield return i;
+            }
+        }
+    }
 }

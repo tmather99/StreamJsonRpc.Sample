@@ -14,8 +14,8 @@ public interface IServer
     Task<Dictionary<Guid, DateTime>> GetDictionaryAsync();
     Task<Dictionary<string, string>> GetTableAsync();
 
-    Task SetObserver(IObserver<int> observer);
-    Task<IObserver<int>> GetObserver();
+    Task SetObserver(IObserver<int> observer, CancellationToken cancellationToken);
+    Task<IObserver<int>> GetObserver(CancellationToken cancellationToken);
 
     Task SetAsyncEnumerable(IAsyncEnumerable<int> values, CancellationToken cancellationToken);
     Task<IAsyncEnumerable<int>> GetAsyncEnumerable(CancellationToken cancellationToken);

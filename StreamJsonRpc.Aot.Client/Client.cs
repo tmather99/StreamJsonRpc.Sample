@@ -149,10 +149,10 @@ internal class Client
         // IObserver<T> marshaling
         async Task Check_IObserver_Marshaling(IServer server)
         {
-            await server.SetObserver(new CounterObserver());
+            await server.SetObserver(new CounterObserver(), cts.Token);
             Console.WriteLine($"SetObserver.");
 
-            IObserver<int> observer = await server.GetObserver();
+            IObserver<int> observer = await server.GetObserver(cts.Token);
             Console.WriteLine($"GetObserver.");
 
             Observable.Interval(TimeSpan.FromMilliseconds(500))
