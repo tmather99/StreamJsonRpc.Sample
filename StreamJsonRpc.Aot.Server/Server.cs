@@ -5,7 +5,7 @@ using StreamJsonRpc.Aot.Common;
 
 namespace StreamJsonRpc.Aot.Server;
 
-// Server implementation
+// StreamJsonRpc server-side implementation
 public partial class Server : IServer
 {
     // unique client identifier per connection

@@ -7,6 +7,7 @@ using StreamJsonRpc.Aot.Common;
 
 namespace StreamJsonRpc.Aot.Client;
 
+// StreamJsonRpc client-side implementation
 internal class Client
 {
     public static async Task RunAsync(NamedPipeClientStream pipe, Guid guid, CancellationTokenSource cts)
