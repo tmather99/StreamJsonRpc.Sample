@@ -97,23 +97,37 @@ internal class Client
         // StreamJsonRpc object marshaling
         async Task CheckDataTypeMarshaling(IServer server)
         {
+            // int marshaling
             int a = Program.rand.Next(1, 10);
             int b = Program.rand.Next(1, 10);
             int sum = await server.AddAsync(a, b);
             Console.WriteLine($"  Calculating {a} + {b} = {sum}");
 
+            // List<string> marshaling
             List<string> list = await server.GetListAsync();
             Console.WriteLine($"  GetList:");
             Console.WriteLine(string.Join(Environment.NewLine, list.Select((v, i) => $"    [{i}] {v}")));
 
+            // Dictionary<Guid, DateTime> marshaling
             Dictionary<Guid, DateTime> dict = await server.GetDictionaryAsync();
             Console.WriteLine($"  GetDictionary:");
             Console.WriteLine(string.Join(Environment.NewLine, dict.Select(kv => $"    {kv.Key}={kv.Value:O}")));
 
+            // Dictionary<string, string> marshaling
             Dictionary<string, string> table = await server.GetTableAsync();
             Console.WriteLine($"  GetTable:");
             Console.WriteLine(string.Join(Environment.NewLine, table.Select(kv => $"    {kv.Key}={kv.Value:O}")));
 
+            // IAsyncEnumerable<T> marshaling
+            await Check_IAsyncEnumerable_Marshaling(server);
+
+            // IObserver<T> marshaling
+            await Check_IObserver_Marshaling(server);
+        }
+
+        // IAsyncEnumerable<T> marshaling
+        async Task Check_IAsyncEnumerable_Marshaling(IServer server)
+        {
             IAsyncEnumerable<int> stream = await server.GetAsyncEnumerable(cts.Token);
             Console.WriteLine($"  GetAsyncEnumerable:");
             Console.WriteLine("    [" + string.Join(", ", await ToListAsync(stream, cts.Token)) + "]");
@@ -129,7 +143,11 @@ internal class Client
                     yield return i;
                 }
             }
+        }
 
+        // IObserver<T> marshaling
+        async Task Check_IObserver_Marshaling(IServer server)
+        {
             await server.SetObserver(new CounterObserver());
             Console.WriteLine($"SetObserver.");
 
@@ -144,11 +162,11 @@ internal class Client
         }
     }
 
-    // Add this helper method to the Client class (or as a static utility method)
-    private static async Task<List<int>> ToListAsync(IAsyncEnumerable<int> source, CancellationToken cancellationToken = default)
+    // net48 does not have ToListAsync extension method
+    private static async Task<List<int>> ToListAsync(IAsyncEnumerable<int> source, CancellationToken ct = default)
     {
         var list = new List<int>();
-        await foreach (int item in source.WithCancellation(cancellationToken))
+        await foreach (int item in source.WithCancellation(ct))
         {
             list.Add(item);
         }

@@ -59,7 +59,7 @@ internal class Client
             if (Program.isConnected)
             {
                 // Test various data type marshaling
-                await CheckDataTypeMarshaling(server);
+                await Check_DataType_Marshaling(server);
 
                 // Start server hearbeat ticks
                 await jsonRpc.NotifyAsync("SendTicksAsync", guid);
@@ -96,25 +96,39 @@ internal class Client
         }
 
         // StreamJsonRpc object marshaling
-        async Task CheckDataTypeMarshaling(IServer server)
+        async Task Check_DataType_Marshaling(IServer server)
         {
+            // int marshaling
             int a = Random.Shared.Next(0, 10);
             int b = Random.Shared.Next(0, 10);
             int sum = await server.AddAsync(a, b);
             Console.WriteLine($"  Calculating {a} + {b} = {sum}");
 
+            // List<string> marshaling
             List<string> list = await server.GetListAsync();
             Console.WriteLine($"  GetList:");
             Console.WriteLine(string.Join(Environment.NewLine, list.Select((v, i) => $"    [{i}] {v}")));
 
+            // Dictionary<Guid, DateTime> marshaling
             Dictionary<Guid, DateTime> dict = await server.GetDictionaryAsync();
             Console.WriteLine($"  GetDictionary:");
             Console.WriteLine(string.Join(Environment.NewLine, dict.Select(kv => $"    {kv.Key}={kv.Value:O}")));
 
+            // Dictionary<string, string> marshaling
             Dictionary<string, string> table = await server.GetTableAsync();
             Console.WriteLine($"  GetTable:");
             Console.WriteLine(string.Join(Environment.NewLine, table.Select(kv => $"    {kv.Key}={kv.Value:O}")));
 
+            // IAsyncEnumerable<T> marshaling
+            await Check_IAsyncEnumerable_Marshaling(server);
+
+            // IObserver<T> marshaling
+            await Check_IObserver_Marshaling(server);
+        }
+
+        // IAsyncEnumerable<T> marshaling
+        async Task Check_IAsyncEnumerable_Marshaling(IServer server)
+        {
             IAsyncEnumerable<int> stream = await server.GetAsyncEnumerable(cts.Token);
             Console.WriteLine($"  GetAsyncEnumerable:");
             Console.WriteLine("    [" + string.Join(", ", await stream.ToListAsync(cts.Token)) + "]");
@@ -130,7 +144,11 @@ internal class Client
                     yield return i;
                 }
             }
+        }
 
+        // IObserver<T> marshaling
+        async Task Check_IObserver_Marshaling(IServer server)
+        {
             await server.SetObserver(new CounterObserver());
             Console.WriteLine($"SetObserver.");
 
