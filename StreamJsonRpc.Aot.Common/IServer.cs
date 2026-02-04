@@ -22,6 +22,7 @@ public partial interface IServer
 
     Task SetAsyncEnumerable(IAsyncEnumerable<int> values, CancellationToken cancellationToken);
     Task<IAsyncEnumerable<int>> GetAsyncEnumerable(CancellationToken cancellationToken);
+    Task<IAsyncEnumerable<int>> ProcessAsyncEnumerable(IStreamListener<int> progress, CancellationToken cancellationToken);
 
     // heatbeat start/stop operations
     Task SendTicksAsync(Guid guid);

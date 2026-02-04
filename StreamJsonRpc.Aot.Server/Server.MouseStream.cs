@@ -1,4 +1,5 @@
 using System.Reactive.Subjects;
+using StreamJsonRpc.Aot.Common;
 using StreamJsonRpc.Aot.Common.MouseStream;
 
 namespace StreamJsonRpc.Aot.Server;
@@ -6,6 +7,8 @@ namespace StreamJsonRpc.Aot.Server;
 // Server implementation - Mouse Stream functionality
 public partial class Server
 {
+    private IMouseStreamListener _mouseStreamListener = null!;
+
     // Static subject to aggregate mouse events from global capture service
     private static readonly Subject<MouseEventData> _globalMouseSubject = new();
     
@@ -36,6 +39,10 @@ public partial class Server
             throw new InvalidOperationException("Client RPC not set");
         }
 
+        _jsonRpc.AllowModificationWhileListening = true;
+        _mouseStreamListener = _jsonRpc.Attach<IMouseStreamListener>();
+        _jsonRpc.AllowModificationWhileListening = false;
+
         // Subscribe to the global mouse subject
         _mouseSubscription = _globalMouseSubject.Subscribe(OnNext, OnError, OnCompleted);
 
@@ -45,7 +52,7 @@ public partial class Server
             {
                 if (isCancel) return;
 
-                Console.WriteLine($"      Mouse {mouseEvent.Action} (X,Y) = ({mouseEvent.X}, {mouseEvent.Y}) -> {guid}");
+                Console.WriteLine($"      Mouse {mouseEvent.Action} (X,Y) = ({mouseEvent.X}, {mouseEvent.Y}) -> {clientGuid}");
 
                 // Call back to client using notification
                 await _mouseStreamListener.OnNextValue(mouseEvent);

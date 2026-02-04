@@ -1,8 +1,20 @@
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
+using StreamJsonRpc.Aot.Common;
+
 namespace StreamJsonRpc.Aot.Server;
 
 // Server implementation - Number Stream functionality
 public partial class Server
 {
+    private INumberStreamListener _numberStreamListener = null!;
+
+    // random number stream generator
+    private readonly Subject<int> _randomNumberGenerator = new();
+
+    // for cleanup when RPC request is canceled
+    private IDisposable _numberSubscription = null!;
+
     // Server streams data to client using notifications
     public async Task SubscribeToNumberStream()
     {
@@ -13,13 +25,28 @@ public partial class Server
             throw new InvalidOperationException("Client RPC not set");
         }
 
-        _subscription = _subject.Subscribe(OnNext, OnError, OnCompleted);
+        // register the stream listener callback interface
+        _jsonRpc.AllowModificationWhileListening = true;
+        _numberStreamListener = _jsonRpc.Attach<INumberStreamListener>();
+        _jsonRpc.AllowModificationWhileListening = false;
+
+        // Simulate publishing data periodically
+        Observable.Interval(TimeSpan.FromMilliseconds(100))
+            .Subscribe(i =>
+            {
+                if (isCancel) return;
+                int r = Random.Shared.Next(1, 100);
+                _randomNumberGenerator.OnNext(r);
+            });
+
+
+        _numberSubscription = _randomNumberGenerator.Subscribe(OnNext, OnError, OnCompleted);
 
         async void OnNext(int value)
         {
             try
             {
-                Console.WriteLine($"      {value, 3} -> {guid}");
+                Console.WriteLine($"      {value, 3} -> {clientGuid}");
 
                 if (isCancel) return;
 

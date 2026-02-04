@@ -6,42 +6,39 @@ using StreamJsonRpc.Aot.Common;
 namespace StreamJsonRpc.Aot.Server;
 
 // Server implementation
-public partial class Server(JsonRpc jsonRpc) : IServer
+public partial class Server : IServer
 {
-    private Guid guid;
+    // unique client identifier per connection
+    private Guid clientGuid; 
+
+    // ctlr+c cancel state
     private bool isCancel;
+
+    // heatbeat tick number
     private int tickNumber = 0;
 
-    // for cleanup when RPC request is canceled
-    private IDisposable _subscription = null!;
-    private readonly Subject<int> _subject = new();
+    // JSON-RPC connection to client
+    private readonly JsonRpc _jsonRpc;
 
-    private readonly List<IObserver<int>> observers = [];
+    // RPC session to client
+    public Server(JsonRpc jsonRpc)
+    {
+        _jsonRpc = jsonRpc;
+    }
 
-    private readonly JsonRpc _jsonRpc = jsonRpc;
-    private readonly INumberStreamListener _numberStreamListener = jsonRpc.Attach<INumberStreamListener>();
-    private readonly IMouseStreamListener _mouseStreamListener = jsonRpc.Attach<IMouseStreamListener>();
-
+    // Client connects and registers its Guid
     public async Task<bool> ConnectAsync(Guid guid)
     {
         Console.ForegroundColor = ConsoleColor.Green;
         Console.WriteLine($"  ClientId: {guid}");
         Console.ResetColor();
 
-        this.guid = guid;
-
-        // Simulate publishing data periodically
-        Observable.Interval(TimeSpan.FromMilliseconds(100))
-                  .Subscribe(i =>
-                   {
-                       if (isCancel) return;
-                       int r = Random.Shared.Next(1, 100);
-                       _subject.OnNext(r);
-                   });
+        this.clientGuid = guid;
 
         return true;
     }
 
+    // Client requests to cancel tick operation
     public Task CancelTickOperation(Guid guid)
     {
         isCancel = true;
@@ -49,6 +46,7 @@ public partial class Server(JsonRpc jsonRpc) : IServer
         return Task.CompletedTask;
     }
 
+    // Server to start sending periodic tick notifications to client
     public async Task SendTicksAsync(Guid guid)
     {
         Console.WriteLine($"  SendTicksAsync isCancel={isCancel}");
@@ -68,9 +66,8 @@ public partial class Server(JsonRpc jsonRpc) : IServer
             await Task.Delay(1000);
         }
 
-        _subject.Dispose();
-        _subscription?.Dispose();
-        _subscription = null!;
+        _randomNumberGenerator.Dispose();
+        _numberSubscription?.Dispose();
+        _numberSubscription = null!;
     }
-
 }
