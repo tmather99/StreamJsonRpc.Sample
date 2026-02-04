@@ -119,11 +119,27 @@ internal class Client
             Console.WriteLine($"  GetTable:");
             Console.WriteLine(string.Join(Environment.NewLine, table.Select(kv => $"    {kv.Key}={kv.Value:O}")));
 
-            // IAsyncEnumerable<T> marshaling
-            await Check_IAsyncEnumerable_Marshaling(server);
-
             // IObserver<T> marshaling
             await Check_IObserver_Marshaling(server);
+
+            // IAsyncEnumerable<T> marshaling
+            await Check_IAsyncEnumerable_Marshaling(server);
+        }
+        
+        // IObserver<T> marshaling
+        async Task Check_IObserver_Marshaling(IServer server)
+        {
+            await server.SetObserver(new CounterObserver(), cts.Token);
+            Console.WriteLine($"SetObserver.");
+
+            IObserver<int> observer = await server.GetObserver(cts.Token);
+            Console.WriteLine($"GetObserver.");
+
+            Observable.Interval(TimeSpan.FromMilliseconds(500))
+                .Subscribe(i =>
+                {
+                    observer.OnNext(-1);
+                });
         }
 
         // IAsyncEnumerable<T> marshaling
@@ -144,22 +160,6 @@ internal class Client
                     yield return i;
                 }
             }
-        }
-
-        // IObserver<T> marshaling
-        async Task Check_IObserver_Marshaling(IServer server)
-        {
-            await server.SetObserver(new CounterObserver(), cts.Token);
-            Console.WriteLine($"SetObserver.");
-
-            IObserver<int> observer = await server.GetObserver(cts.Token);
-            Console.WriteLine($"GetObserver.");
-
-            Observable.Interval(TimeSpan.FromMilliseconds(500))
-                .Subscribe(i =>
-                {
-                    observer.OnNext(-1);
-                });
         }
     }
 }   

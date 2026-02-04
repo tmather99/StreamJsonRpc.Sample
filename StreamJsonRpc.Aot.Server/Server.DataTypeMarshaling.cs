@@ -53,6 +53,7 @@ public partial class Server : IServer
         return Task.FromResult(table);
     }
 
+    // IObserver<T> marshaling
     public Task SetObserver(IObserver<int> observer, CancellationToken ct)
     {
         Console.WriteLine("  Subscribe");
@@ -81,7 +82,8 @@ public partial class Server : IServer
         ct.ThrowIfCancellationRequested();
         return Task.FromResult(observers.First());
     }
-    
+
+    // IAsyncEnumerable<T> marshaling
     public async Task SetAsyncEnumerable(IAsyncEnumerable<int> values, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(values);
