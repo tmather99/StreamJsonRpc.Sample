@@ -15,7 +15,14 @@ internal class Program
         try
         {
             // Start global mouse capture at application startup
-            StartMouseCaptureService();
+            if (OperatingSystem.IsWindows())
+            {
+                StartMouseCaptureService();
+            }
+            else
+            {
+                Console.WriteLine("Mouse capture service is only supported on Windows.");
+            }
 
             // Handle Ctrl+C for graceful shutdown
             Console.CancelKeyPress += (sender, e) =>
