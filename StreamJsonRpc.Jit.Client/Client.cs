@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO.Pipes;
 using System.Linq;
 using System.Reactive.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Threading;
@@ -90,7 +91,7 @@ internal class Client
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error: {ex.Message}");
+            Console.WriteLine($"Error: {ex}");
         }
 
         // StreamJsonRpc object marshaling
@@ -113,6 +114,22 @@ internal class Client
             Console.WriteLine($"  GetTable:");
             Console.WriteLine(string.Join(Environment.NewLine, table.Select(kv => $"    {kv.Key}={kv.Value:O}")));
 
+            IAsyncEnumerable<int> stream = await server.GetAsyncEnumerable(cts.Token);
+            Console.WriteLine($"  GetAsyncEnumerable:");
+            Console.WriteLine("    [" + string.Join(", ", await ToListAsync(stream, cts.Token)) + "]");
+
+            await server.SetAsyncEnumerable(ProduceNumbers(cts.Token), cts.Token);
+            Console.WriteLine($"  SetAsyncEnumerable.");
+
+            async IAsyncEnumerable<int> ProduceNumbers([EnumeratorCancellation] CancellationToken ct = default)
+            {
+                for (int i = 1; i <= 10; i++)
+                {
+                    await Task.Delay(100, ct);   // simulate async work
+                    yield return i;
+                }
+            }
+
             await server.SetObserver(new CounterObserver());
             Console.WriteLine($"SetObserver.");
 
@@ -125,5 +142,16 @@ internal class Client
                     observer.OnNext(-1);
                 });
         }
+    }
+
+    // Add this helper method to the Client class (or as a static utility method)
+    private static async Task<List<int>> ToListAsync(IAsyncEnumerable<int> source, CancellationToken cancellationToken = default)
+    {
+        var list = new List<int>();
+        await foreach (int item in source.WithCancellation(cancellationToken))
+        {
+            list.Add(item);
+        }
+        return list;
     }
 }

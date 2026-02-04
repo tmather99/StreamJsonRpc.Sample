@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace StreamJsonRpc.Jit.Client;
@@ -15,6 +16,9 @@ public interface IServer
 
     Task SetObserver(IObserver<int> observer);
     Task<IObserver<int>> GetObserver();
+
+    Task SetAsyncEnumerable(IAsyncEnumerable<int> values, CancellationToken cancellationToken);
+    Task<IAsyncEnumerable<int>> GetAsyncEnumerable(CancellationToken cancellationToken);
 
     Task SendTicksAsync(Guid guid);
     Task CancelTickOperation(Guid guid);

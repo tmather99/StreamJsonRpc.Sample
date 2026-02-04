@@ -1,4 +1,5 @@
-﻿using PolyType;
+﻿using System.Collections.Generic;
+using PolyType;
 
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("StreamJsonRpc.Aot.Client")]
 
@@ -16,6 +17,9 @@ public partial interface IServer
 
     Task SetObserver(IObserver<int> observer);
     Task<IObserver<int>> GetObserver();
+
+    Task SetAsyncEnumerable(IAsyncEnumerable<int> values, CancellationToken cancellationToken);
+    Task<IAsyncEnumerable<int>> GetAsyncEnumerable(CancellationToken cancellationToken);
 
     Task SendTicksAsync(Guid guid);
     Task CancelTickOperation(Guid guid);

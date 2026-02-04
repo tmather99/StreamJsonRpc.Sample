@@ -1,5 +1,6 @@
 using System.IO.Pipes;
 using System.Reactive.Linq;
+using System.Runtime.CompilerServices;
 using Microsoft.VisualStudio.Threading;
 using StreamJsonRpc;
 using StreamJsonRpc.Aot.Common;
@@ -113,6 +114,22 @@ internal class Client
             Dictionary<string, string> table = await server.GetTableAsync();
             Console.WriteLine($"  GetTable:");
             Console.WriteLine(string.Join(Environment.NewLine, table.Select(kv => $"    {kv.Key}={kv.Value:O}")));
+
+            IAsyncEnumerable<int> stream = await server.GetAsyncEnumerable(cts.Token);
+            Console.WriteLine($"  GetAsyncEnumerable:");
+            Console.WriteLine("    [" + string.Join(", ", await stream.ToListAsync(cts.Token)) + "]");
+
+            await server.SetAsyncEnumerable(ProduceNumbers(cts.Token), cts.Token);
+            Console.WriteLine($"  SetAsyncEnumerable.");
+
+            async IAsyncEnumerable<int> ProduceNumbers([EnumeratorCancellation] CancellationToken ct = default)
+            {
+                for (int i = 1; i <= 10; i++)
+                {
+                    await Task.Delay(100, ct);   // simulate async work
+                    yield return i;
+                }
+            }
 
             await server.SetObserver(new CounterObserver());
             Console.WriteLine($"SetObserver.");

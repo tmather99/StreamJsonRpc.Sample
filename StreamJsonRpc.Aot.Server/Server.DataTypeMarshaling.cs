@@ -4,7 +4,7 @@ using StreamJsonRpc.Aot.Common;
 namespace StreamJsonRpc.Aot.Server;
 
 // Server data methods implementation
-public partial class Server
+public partial class Server : IServer
 {
     public Task<int> AddAsync(int a, int b)
     {
@@ -79,4 +79,6 @@ public partial class Server
 
         return Task.FromResult(observers.First());
     }
+
+
 }
