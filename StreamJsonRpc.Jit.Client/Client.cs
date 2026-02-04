@@ -86,7 +86,10 @@ internal class Client
         }
         catch (OperationCanceledException)
         {
+            // stop hearbeat ticks
             await jsonRpc.InvokeAsync("CancelTickOperation", guid);
+
+            numberSubscription?.Dispose();
             mouseClickSubscription?.Dispose();
             mouseMoveSubscription?.Dispose();
             throw;  // rethrow to main

@@ -84,7 +84,9 @@ internal class Client
         }
         catch (OperationCanceledException)
         {
+            // stop heartbeat ticks
             await jsonRpc.InvokeAsync("CancelTickOperation", guid);
+
             numberSubscription?.Dispose();
             mouseClickSubscription?.Dispose();
             mouseMoveSubscription?.Dispose();
