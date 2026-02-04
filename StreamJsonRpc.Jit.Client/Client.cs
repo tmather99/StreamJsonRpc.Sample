@@ -15,25 +15,20 @@ internal class Client
 {
     public static async Task RunAsync(NamedPipeClientStream pipe, Guid guid, CancellationTokenSource cts)
     {
-        // Create the JSON-RPC client over the pipe with MessagePack serialization
-        JsonRpc jsonRpc = new(MessagePackHandler.Create(pipe));
+        JsonRpc jsonRpc = null!;
 
         // Subscription to filtered observable
-        IDisposable numberSubscription = null;
-        IDisposable mouseClickSubscription = null;
-        IDisposable mouseMoveSubscription = null;
+        IDisposable? numberSubscription = null;
+        IDisposable? mouseClickSubscription = null;
+        IDisposable? mouseMoveSubscription = null;
 
         try
         {
+            // Create the MessagePack handler over the pipe
+            jsonRpc = new(MessagePackHandler.Create(pipe));
+
             // Handle push events from server.
             jsonRpc.AddLocalRpcMethod("Tick", TickHandler());
-
-            // Register server RPC methods
-            IServer server = jsonRpc.Attach<IServer>();
-
-            // Register client callbacks so server can call back to us
-            var numberStreamStreamListener = new NumberStreamListener();
-            jsonRpc.AddLocalRpcTarget(numberStreamStreamListener);
 
             // Handler for server push notifications.
             Func<int, Task> TickHandler()
@@ -45,6 +40,13 @@ internal class Client
                     Console.ResetColor();
                 };
             }
+
+            // Register server RPC methods
+            IServer server = jsonRpc.Attach<IServer>();
+
+            // Register client callbacks so server can call back to us
+            var numberStreamStreamListener = new NumberStreamListener();
+            jsonRpc.AddLocalRpcTarget(numberStreamStreamListener);
 
             // Register client callbacks for mouse stream
             var mouseStreamListener = new MouseStreamListener();
@@ -59,7 +61,7 @@ internal class Client
             if (Program.isConnected)
             {
                 // Test various data type marshaling
-                await CheckDataTypeMarshaling(server);
+                await Check_DataType_Marshaling(server);
 
                 // Start server hearbeat ticks
                 await jsonRpc.NotifyAsync("SendTicksAsync", guid);
@@ -95,7 +97,7 @@ internal class Client
         }
 
         // StreamJsonRpc object marshaling
-        async Task CheckDataTypeMarshaling(IServer server)
+        async Task Check_DataType_Marshaling(IServer server)
         {
             // int marshaling
             int a = Program.rand.Next(1, 10);
