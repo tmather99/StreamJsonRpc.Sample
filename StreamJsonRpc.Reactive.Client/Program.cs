@@ -9,7 +9,15 @@ public class CounterObserver : IObserver<int>
 {
     public void OnNext(int value)
     {
-        Console.WriteLine($"OnNext Couter = {value}");
+        if (value != -1)
+        {
+            Console.WriteLine($"OnNext Couter = {value}");
+            return;
+        }
+
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.WriteLine("Value inserted from client");
+        Console.ResetColor();
     }
 
     public void OnCompleted()
@@ -38,13 +46,13 @@ class Program
             await RunAsync(stream);
         }
 
+        Console.ReadLine();
         Console.WriteLine("Terminating stream...");
     }
 
     static async Task RunAsync(NamedPipeClientStream pipe)
     {
-        HeaderDelimitedMessageHandler messageHandler = new(pipe, SystemTextJson.CreateFormatter());
-        JsonRpc jsonRpc = new(messageHandler);
+        JsonRpc jsonRpc = new(MessagePackHandler.Create(pipe));
 
         IRpcService rpcService = jsonRpc.Attach<IRpcService>();
         Console.WriteLine("Connected. Sending request...");
@@ -62,19 +70,18 @@ class Program
             Console.WriteLine($"  {value}");
         }
 
-        //
-        // IObserver and IObserable are not marshalable by StreamJsonRpc.Reactive
-        //
         await rpcService.Subcribe(new CounterObserver());
         Console.WriteLine($"Subcribe.");
 
-        IObservable<int> observer = await rpcService.GetObservable();
-        IDisposable subscription = observer
-            .Subscribe(
-                onNext: value => Console.WriteLine($"OnNext Observable = {value}"),
-                onError: error => Console.WriteLine($"Observable error: {error.Message}"),
-                onCompleted: () => Console.WriteLine("Observable completed."));
-        Console.WriteLine($"GetObservable.");
+        IObserver<int> observer = await rpcService.GetObserver();
+        Console.WriteLine($"GetObserver.");
 
+        Observable.Interval(TimeSpan.FromMilliseconds(500))
+            .Subscribe(i =>
+            {
+                observer.OnNext(-1);
+            });
+
+        await jsonRpc.Completion;
     }
 }

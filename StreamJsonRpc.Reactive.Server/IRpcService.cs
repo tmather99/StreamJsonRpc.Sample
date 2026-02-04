@@ -11,5 +11,5 @@ internal partial interface IRpcService : IDisposable
 
     Task Subcribe(IObserver<int> observer);
 
-    Task<IObservable<int>> GetObservable();
+    Task<IObserver<int>> GetObserver();
 }

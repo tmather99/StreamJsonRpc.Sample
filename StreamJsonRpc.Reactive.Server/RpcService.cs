@@ -40,17 +40,23 @@ class RpcService : IRpcService
         lock (this.observers)
         {
             this.observers.Add(observer);
+
+            Observable.Interval(TimeSpan.FromMilliseconds(300))
+                .Subscribe(i =>
+                {
+                    int r = Random.Shared.Next(1, 100);
+                    Console.WriteLine($"  OnNext: {r}");
+                    observer.OnNext(r);
+                });
         }
 
         return Task.CompletedTask;
     }
 
-    public Task<IObservable<int>> GetObservable()
+    public Task<IObserver<int>> GetObserver()
     {
         Console.WriteLine("  GetObservable");
 
-        // Return an observable that clients can subscribe to
-        return Task.FromResult(Observable.Interval(TimeSpan.FromSeconds(1))
-            .Select(i => (int)i));
+        return Task.FromResult(observers.First());
     }
 }

@@ -23,18 +23,10 @@ static async Task RunAsync(NamedPipeServerStream pipe, int requestId)
 {
     await Console.Error.WriteLineAsync($"  Connection request #{requestId} received.");
 
-    HeaderDelimitedMessageHandler messageHandler = new(pipe, SystemTextJson.CreateFormatter());
-    JsonRpc jsonRpc = new(messageHandler);
-
-    //jsonRpc.AddLocalRpcTarget(new RpcService());
-    //jsonRpc.StartListening();
+    JsonRpc jsonRpc = new(MessagePackHandler.Create(pipe));
 
     RpcTargetMetadata targetMetadata = RpcTargetMetadata.FromShape<IRpcService>();
-    jsonRpc.AddLocalRpcTarget(targetMetadata, new RpcService(), new 
-        JsonRpcTargetOptions()
-        {
-            UseSingleObjectParameterDeserialization = true
-        });
+    jsonRpc.AddLocalRpcTarget(targetMetadata, new RpcService(), null);
     jsonRpc.StartListening();
 
     await jsonRpc.Completion;

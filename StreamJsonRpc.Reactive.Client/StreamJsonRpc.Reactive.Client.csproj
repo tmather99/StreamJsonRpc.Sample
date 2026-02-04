@@ -17,7 +17,7 @@
 
 	<ItemGroup>
 	  <Compile Include="..\StreamJsonRpc.Reactive.Server\IRpcService.cs" Link="IRpcService.cs" />
-	  <Compile Include="..\StreamJsonRpc.Reactive.Server\SystemTextJson.cs" Link="SystemTextJson.cs" />
+	  <Compile Include="..\StreamJsonRpc.Reactive.Server\MessagePackHandler.cs" Link="MessagePackHandler.cs" />
 	</ItemGroup>
 
 	<ItemGroup>
