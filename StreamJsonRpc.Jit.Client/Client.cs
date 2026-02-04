@@ -45,11 +45,11 @@ internal class Client
             IServer server = jsonRpc.Attach<IServer>();
 
             // Register client callbacks so server can call back to us
-            var numberStreamStreamListener = new NumberStreamListener();
-            jsonRpc.AddLocalRpcTarget(numberStreamStreamListener);
+            NumberStreamListener numberStreamListener = new();
+            jsonRpc.AddLocalRpcTarget(numberStreamListener);
 
             // Register client callbacks for mouse stream
-            var mouseStreamListener = new MouseStreamListener();
+            MouseStreamListener mouseStreamListener = new();
             jsonRpc.AddLocalRpcTarget(mouseStreamListener);
 
             // Start listening for messages
@@ -68,7 +68,7 @@ internal class Client
                 Console.WriteLine($"  SendTicksAsync {guid}");
 
                 // Subscribe to filtered number stream
-                numberSubscription = numberStreamStreamListener.CreateFilteredSubscription();
+                numberSubscription = numberStreamListener.CreateFilteredSubscription();
 
                 // Start subscription to server stream
                 await server.SubscribeToNumberStream();

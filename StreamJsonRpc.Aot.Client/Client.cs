@@ -40,12 +40,12 @@ internal class Client
             // Register server RPC methods
             IServer server = jsonRpc.Attach<IServer>();
 
-            // Register client callbacks so server can call back to us
+            // AOT Register client callbacks so server can call back to us
             RpcTargetMetadata targetMetadata = RpcTargetMetadata.FromShape<INumberStreamListener>();
             NumberStreamListener numberStreamListener = new();
             jsonRpc.AddLocalRpcTarget(targetMetadata, numberStreamListener, null);
 
-            // Register client callbacks for mouse stream
+            // AOT Register client callbacks for mouse stream
             RpcTargetMetadata mouseTargetMetadata = RpcTargetMetadata.FromShape<IMouseStreamListener>();
             MouseStreamListener mouseStreamListener = new();
             jsonRpc.AddLocalRpcTarget(mouseTargetMetadata, mouseStreamListener, null);
