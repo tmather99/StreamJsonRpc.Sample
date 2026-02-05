@@ -16,15 +16,15 @@ public interface IServer
     Task<Dictionary<string, string>> GetTableAsync();
 
     // Counter observer operations
-    Task SetObserver(IObserver<int> observer, CancellationToken cancellationToken);
+    Task SetObserver(IObserver<int> observer, CancellationToken ct);
     Task<IObserver<int>> GetObserver(CancellationToken cancellationToken);
+    Task SetCounterObserver(IObserver<int> observer, Guid guid, CancellationToken ct);
 
-    Task SetCounterObserver(IObserver<int> observer, Guid guid, CancellationToken cancellationToken);
-    Task<ICounterObserver> GetCounterObserver(CancellationToken cancellationToken);
-
-    Task SetAsyncEnumerable(IAsyncEnumerable<int> values, CancellationToken cancellationToken);
-    Task<IAsyncEnumerable<int>> GetAsyncEnumerable(CancellationToken cancellationToken);
-    Task<IAsyncEnumerable<int>> ProcessAsyncEnumerable(ICounterObserver progress, CancellationToken cancellationToken);
+    // async enumerable operations
+    Task SetAsyncEnumerable(IAsyncEnumerable<int> values, CancellationToken ct);
+    Task<IAsyncEnumerable<int>> GetAsyncEnumerable(CancellationToken ct);
+    Task<IAsyncEnumerable<int>> ProcessAsyncEnumerable(IObserver<int> progress, CancellationToken ct);
+    Task<IAsyncEnumerable<int>> DuplexAsyncEnumerable(IAsyncEnumerable<int> tag, CancellationToken ct);
 
     // heatbeat start/stop operations
     Task SendTicksAsync(Guid guid);

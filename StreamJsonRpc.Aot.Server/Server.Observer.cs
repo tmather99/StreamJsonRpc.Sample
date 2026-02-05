@@ -8,10 +8,10 @@ public partial class Server : IServer
 {
     private readonly List<IObserver<int>> observers = [];
 
-    // IObserver<T> marshaling
+    // IObserver<T> marshaling for AOT client
     public Task SetObserver(IObserver<int> observer, CancellationToken ct)
     {
-        Console.WriteLine("  Subscribe");
+        Console.WriteLine("  SetObserver");
 
         lock (this.observers)
         {
@@ -33,6 +33,22 @@ public partial class Server : IServer
         return Task.CompletedTask;
     }
 
+    // IObserver<T> marshaling with server callback for net48 client
+    public Task SetCounterObserver(IObserver<int> observer, Guid oid, CancellationToken ct)
+    {
+        Console.WriteLine("  SetCounterObserver");
+
+        lock (this.observers)
+        {
+            this.observers.Add(observer);
+        }
+
+        _ = this.SubscribeToCounterObserverStream(observer, oid);
+
+        return Task.CompletedTask;
+    }
+
+    // IObserver<T> marshaling - server pushes data to client using observer callback
     public Task<IObserver<int>> GetObserver(CancellationToken ct)
     {
         Console.WriteLine("  GetObservable");

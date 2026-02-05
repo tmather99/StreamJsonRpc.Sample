@@ -51,6 +51,11 @@ internal class Client
             MouseStreamListener mouseStreamListener = new();
             jsonRpc.AddLocalRpcTarget(mouseTargetMetadata, mouseStreamListener, null);
 
+            // AOT Register client callbacks for counter observer stream
+            RpcTargetMetadata counterObserverTargetMetadata = RpcTargetMetadata.FromShape<ICounterObserver>();
+            ICounterObserver counterObserverStreamListener = new CounterObserver();
+            jsonRpc.AddLocalRpcTarget(counterObserverTargetMetadata, counterObserverStreamListener, null);
+
             // Start listening for messages
             jsonRpc.StartListening();
 
@@ -133,8 +138,18 @@ internal class Client
         async Task Check_IObserver_Marshaling(IServer server)
         {
             await server.SetObserver(new CounterObserver(), cts.Token);
-            Console.WriteLine($"SetObserver.");
 
+            //
+            // Failed to deserializing JSON-RPC argument!!!!!
+            //
+            //    await server.SetCounterObserver(new CounterObserver(), cts.Token);
+            //    await server.SetNumberStreamListener(new NumberStreamListener(), cts.Token);
+            //
+
+            Console.WriteLine($"SetCounterObserver.");
+
+
+            // Get observer from server and push values to it
             IObserver<int> observer = await server.GetObserver(cts.Token);
             Console.WriteLine($"GetObserver.");
 
@@ -148,13 +163,23 @@ internal class Client
         // IAsyncEnumerable<T> marshaling
         async Task Check_IAsyncEnumerable_Marshaling(IServer server)
         {
+            // Get async stream from server and consume it
             IAsyncEnumerable<int> stream = await server.GetAsyncEnumerable(cts.Token);
             Console.WriteLine($"  GetAsyncEnumerable:");
             Console.WriteLine("    [" + string.Join(", ", await stream.ToListAsync(cts.Token)) + "]");
 
-            await server.SetAsyncEnumerable(ProduceNumbers(cts.Token), cts.Token);
-            Console.WriteLine($"  SetAsyncEnumerable.");
+            // Push async stream to server and process it with client-side progress reporting
+            await ProcessAsyncEnumerable(server);
 
+            // Duplex async stream between client and server
+            //await DuplexAsyncEnumerable(server);
+        }
+
+        // Push async stream to server
+        async Task ProcessAsyncEnumerable(IServer server1)
+        {
+            await server1.SetAsyncEnumerable(ProduceNumbers(cts.Token), cts.Token);
+            Console.WriteLine($"  SetAsyncEnumerable.");
             async IAsyncEnumerable<int> ProduceNumbers([EnumeratorCancellation] CancellationToken ct = default)
             {
                 for (int i = 1; i <= 10; i++)
@@ -163,6 +188,43 @@ internal class Client
                     yield return i;
                 }
             }
+
+            // Process server stream with client-side progress reporting
+            IAsyncEnumerable<int> valueStream = await server1.ProcessAsyncEnumerable(new ProgressObserver(), cts.Token);
+            Console.WriteLine($"  ProcessAsyncEnumerable.");
+            await foreach (int item in valueStream.WithCancellation(cts.Token))
+            {
+                Console.WriteLine($"Client received stream value: {item}");
+            }
+        }
+
+        // Duplex async stream between client and server
+        async Task DuplexAsyncEnumerable(IServer server)
+        {
+            async IAsyncEnumerable<int> ClientStream([EnumeratorCancellation] CancellationToken ct)
+            {
+                for (int i = 10; i <= 100; i += 10)
+                {
+                    await Task.Delay(300, ct);
+                    Console.WriteLine($"Client sending: {i}");
+                    yield return i;
+                }
+            }
+
+            IAsyncEnumerable<int> serverStream = await server.DuplexAsyncEnumerable(ClientStream(cts.Token), cts.Token);
+
+            await foreach (int value in serverStream.WithCancellation(cts.Token))
+            {
+                Console.WriteLine($"Client received: {value}");
+            }
         }
     }
-}   
+
+    // Implementation of IObserver<int> to receive progress updates from server
+    class ProgressObserver : IObserver<int>
+    {
+        public void OnNext(int value) => Console.WriteLine($"Progress: {value}%");
+        public void OnCompleted() => Console.WriteLine("Progress complete");
+        public void OnError(Exception error) => Console.WriteLine(error);
+    }
+}

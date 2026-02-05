@@ -38,26 +38,15 @@ public partial class Server : IServer
         return true;
     }
 
-    public Task SetCounterObserver(IObserver<int> observer, Guid oid, CancellationToken ct)
-    {
-        Console.WriteLine("  SetCounterObserver");
-
-        lock (this.observers)
-        {
-            this.observers.Add(observer);
-        }
-
-        _ = this.SubscribeToCounterObserverStream(observer, oid);
-
-        return Task.CompletedTask;
-    }
-
-    public Task<ICounterObserver> GetCounterObserver(CancellationToken cancellationToken)
+    //
+    // NOTE: Failed to deserialize custom types as JSON-RPC argument
+    //
+    public Task SetCounterObserver(ICounterObserver observer, CancellationToken ct)
     {
         throw new NotImplementedException();
     }
 
-    public Task<IAsyncEnumerable<int>> ProcessAsyncEnumerable(ICounterObserver progress, CancellationToken cancellationToken)
+    public Task SetNumberStreamListener(INumberStreamListener listner, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
     }

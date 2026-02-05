@@ -59,7 +59,7 @@ internal class Client
             // AOT Register client callbacks for mouse stream
             RpcTargetMetadata counterObserverTargetMetadata = RpcTargetMetadata.FromShape<ICounterObserver>();
             jsonRpc.AddLocalRpcTarget(counterObserverTargetMetadata, counterObserver, null);
-            
+
             // Start listening for messages
             jsonRpc.StartListening();
 
@@ -100,7 +100,7 @@ internal class Client
             numberSubscription?.Dispose();
             mouseClickSubscription?.Dispose();
             mouseMoveSubscription?.Dispose();
-            throw;  // rethrow to main
+            throw; // rethrow to main
         }
         catch (Exception ex)
         {
@@ -131,23 +131,51 @@ internal class Client
             Console.WriteLine($"  GetTable:");
             Console.WriteLine(string.Join(Environment.NewLine, table.Select(kv => $"    {kv.Key}={kv.Value:O}")));
 
-            // IAsyncEnumerable<T> marshaling
-            await Check_IAsyncEnumerable_Marshaling(server);
-
             // IObserver<T> marshaling
             await Check_IObserver_Marshaling(server);
-        }
 
+            // IAsyncEnumerable<T> marshaling
+            await Check_IAsyncEnumerable_Marshaling(server);
+        }
+        
+        // IObserver<T> marshaling
+        async Task Check_IObserver_Marshaling(IServer server)
+        {
+            ICounterObserver counterObserver = new CounterObserver();
+
+            //await server.SetObserver(counterObserver, cts.Token);
+            //Console.WriteLine($"SetObserver.");
+
+            await server.SetCounterObserver(counterObserver, Guid.NewGuid(), cts.Token);
+            Console.WriteLine($"  SetCounterObserver.");
+
+            IObserver<int> observer = await server.GetObserver(cts.Token);
+            Console.WriteLine($"  GetObserver.");
+
+            Observable.Interval(TimeSpan.FromMilliseconds(500))
+                .Subscribe(i => { observer.OnNext(-1); });
+        }
+        
         // IAsyncEnumerable<T> marshaling
         async Task Check_IAsyncEnumerable_Marshaling(IServer server)
         {
+            // Get stream from server and consume it
             IAsyncEnumerable<int> stream = await server.GetAsyncEnumerable(cts.Token);
             Console.WriteLine($"  GetAsyncEnumerable:");
             Console.WriteLine("    [" + string.Join(", ", await ToListAsync(stream, cts.Token)) + "]");
 
-            await server.SetAsyncEnumerable(ProduceNumbers(cts.Token), cts.Token);
-            Console.WriteLine($"  SetAsyncEnumerable.");
+            // Push async stream to server and process it with client-side progress reporting
+            await ProcessAsyncEnumerable(server);
 
+            // Duplex async stream between client and server
+            //await DuplexAsyncEnumerable(server);
+        }
+        
+        // Push async stream to server
+        async Task ProcessAsyncEnumerable(IServer server1)
+        {
+            await server1.SetAsyncEnumerable(ProduceNumbers(cts.Token), cts.Token);
+            Console.WriteLine($"  SetAsyncEnumerable.");
             async IAsyncEnumerable<int> ProduceNumbers([EnumeratorCancellation] CancellationToken ct = default)
             {
                 for (int i = 1; i <= 10; i++)
@@ -156,26 +184,14 @@ internal class Client
                     yield return i;
                 }
             }
-        }
 
-        // IObserver<T> marshaling
-        async Task Check_IObserver_Marshaling(IServer server)
-        {
-            //await server.SetObserver(new CounterObserver(), cts.Token);
-            //Console.WriteLine($"SetObserver.");
-
-            ICounterObserver counterObserver = new CounterObserver();
-            await server.SetCounterObserver(counterObserver, Guid.NewGuid(), cts.Token);
-            Console.WriteLine($"SetCounterObserver.");
-
-            IObserver<int> observer = await server.GetObserver(cts.Token);
-            Console.WriteLine($"GetObserver.");
-
-            Observable.Interval(TimeSpan.FromMilliseconds(500))
-                .Subscribe(i =>
-                {
-                    observer.OnNext(-1);
-                });
+            // Process server stream with client-side progress reporting
+            IAsyncEnumerable<int> valueStream = await server1.ProcessAsyncEnumerable(new ProgressObserver(), cts.Token);
+            Console.WriteLine($"  ProcessAsyncEnumerable.");
+            await foreach (int item in valueStream.WithCancellation(cts.Token))
+            {
+                Console.WriteLine($"Client received stream value: {item}");
+            }
         }
     }
 
@@ -187,6 +203,15 @@ internal class Client
         {
             list.Add(item);
         }
+
         return list;
+    }
+
+    // Implementation of IObserver<int> to receive progress updates from server
+    class ProgressObserver : IObserver<int>
+    {
+        public void OnNext(int value) => Console.WriteLine($"Progress: {value}%");
+        public void OnCompleted() => Console.WriteLine("Progress complete");
+        public void OnError(Exception error) => Console.WriteLine(error);
     }
 }

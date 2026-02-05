@@ -29,11 +29,6 @@ public static partial class NerdbankMessagePack
         };
     }
 
-    [GenerateShapeFor<ICounterObserver>]
-    [GenerateShapeFor<Guid>]
-    [GenerateShapeFor<List<string>>]
-    [GenerateShapeFor<Dictionary<Guid, DateTime>>]
-    [GenerateShapeFor<Dictionary<string, string>>]
     [GenerateShapeFor<Dictionary<int, MouseAction>>]
     [GenerateShapeFor<Dictionary<int, MouseEventData>>]
     public partial class Witness;
@@ -50,10 +45,6 @@ public static partial class SystemTextJson
         };
     }
 
-    [JsonSerializable(typeof(Guid))]
-    [JsonSerializable(typeof(List<string>))]
-    [JsonSerializable(typeof(Dictionary<Guid, DateTime>))]
-    [JsonSerializable(typeof(Dictionary<string, string>))]
     [JsonSerializable(typeof(Dictionary<int, MouseAction>))]
     [JsonSerializable(typeof(Dictionary<int, MouseEventData>))]
     private partial class SourceGenerationContext : JsonSerializerContext;
