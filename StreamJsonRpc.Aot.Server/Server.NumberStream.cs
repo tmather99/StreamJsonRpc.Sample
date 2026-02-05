@@ -10,7 +10,7 @@ public partial class Server
     private INumberStreamListener _numberStreamListener = null!;
 
     // random number stream generator
-    private readonly Subject<int> _randomNumberGenerator = new();
+    private readonly Subject<int> _numberStreamSubject = new();
 
     // for cleanup when RPC request is canceled
     private IDisposable _numberSubscription = null!;
@@ -36,19 +36,21 @@ public partial class Server
             {
                 if (isCancel) return;
                 int r = Random.Shared.Next(1, 100);
-                _randomNumberGenerator.OnNext(r);
+                _numberStreamSubject.OnNext(r);
             });
 
 
-        _numberSubscription = _randomNumberGenerator.Subscribe(OnNext, OnError, OnCompleted);
+        _numberSubscription = _numberStreamSubject.Subscribe(OnNext, OnError, OnCompleted);
 
         async void OnNext(int value)
         {
             try
             {
-                Console.WriteLine($"      {value, 3} -> {clientGuid}");
-
                 if (isCancel) return;
+
+                Console.ForegroundColor = ConsoleColor.DarkGray;
+                Console.WriteLine($"      {value, 3} -> {clientGuid}");
+                Console.ResetColor();
 
                 // Call back to client using notification
                 await _numberStreamListener.OnNextValue(value);

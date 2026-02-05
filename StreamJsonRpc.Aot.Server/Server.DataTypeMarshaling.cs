@@ -7,8 +7,6 @@ namespace StreamJsonRpc.Aot.Server;
 // Server data methods implementation
 public partial class Server : IServer
 {
-    private readonly List<IObserver<int>> observers = [];
-
     public Task<int> AddAsync(int a, int b)
     {
         int sum = a + b;
@@ -53,92 +51,5 @@ public partial class Server : IServer
         };
 
         return Task.FromResult(table);
-    }
-
-    // IObserver<T> marshaling
-    public Task SetObserver(IObserver<int> observer, CancellationToken ct)
-    {
-        Console.WriteLine("  Subscribe");
-
-        lock (this.observers)
-        {
-            this.observers.Add(observer);
-
-            Observable.Interval(TimeSpan.FromMilliseconds(300))
-                .Subscribe(i =>
-                {
-                    if (isCancel) return;
-                    ct.ThrowIfCancellationRequested();
-                    int r = Random.Shared.Next(1, 100);
-                    Console.WriteLine($"  CounterObserver - OnNext: {r}");
-                    observer.OnNext(r);
-                });
-        }
-
-        return Task.CompletedTask;
-    }
-
-    public Task<IObserver<int>> GetObserver(CancellationToken ct)
-    {
-        Console.WriteLine("  GetObservable");
-        ct.ThrowIfCancellationRequested();
-        return Task.FromResult(observers.First());
-    }
-
-    // IAsyncEnumerable<T> marshaling
-    public async Task SetAsyncEnumerable(IAsyncEnumerable<int> values, CancellationToken ct)
-    {
-        ArgumentNullException.ThrowIfNull(values);
-
-        Console.WriteLine("  SetAsyncEnumerable.");
-
-        await foreach (int value in values.WithCancellation(ct))
-        {
-            Console.WriteLine($"    Received value: {value}");
-        }
-    }
-
-    public Task<IAsyncEnumerable<int>> GetAsyncEnumerable(CancellationToken ct)
-    {
-        Console.WriteLine("  GetAsyncEnumerable.");
-
-        IAsyncEnumerable<int> Stream()
-        {
-            return GetValues(ct);
-        }
-
-        return Task.FromResult(Stream());
-
-        async IAsyncEnumerable<int> GetValues([EnumeratorCancellation] CancellationToken ct)
-        {
-            for (int i = 1; i <= 20; i++)
-            {
-                ct.ThrowIfCancellationRequested();
-                await Task.Yield();
-                yield return i;
-            }
-        }
-    }
-
-    public Task<IAsyncEnumerable<int>> ProcessAsyncEnumerable(IStreamListener<int> progress, CancellationToken ct)
-    {
-        Console.WriteLine("  GetAsyncEnumerable.");
-
-        IAsyncEnumerable<int> Stream()
-        {
-            return GetValues(ct);
-        }
-
-        return Task.FromResult(Stream());
-
-        async IAsyncEnumerable<int> GetValues([EnumeratorCancellation] CancellationToken ct)
-        {
-            for (int i = 1; i <= 20; i++)
-            {
-                ct.ThrowIfCancellationRequested();
-                await Task.Yield();
-                yield return i;
-            }
-        }
     }
 }

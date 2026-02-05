@@ -51,8 +51,10 @@ public partial class Server
             try
             {
                 if (isCancel) return;
-
+                
+                Console.ForegroundColor = ConsoleColor.DarkGray;
                 Console.WriteLine($"      Mouse {mouseEvent.Action} (X,Y) = ({mouseEvent.X}, {mouseEvent.Y}) -> {clientGuid}");
+                Console.ResetColor();
 
                 // Call back to client using notification
                 await _mouseStreamListener.OnNextValue(mouseEvent);
