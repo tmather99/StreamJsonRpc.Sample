@@ -29,6 +29,7 @@ public static partial class NerdbankMessagePack
         };
     }
 
+    [GenerateShapeFor<ICounterObserver>]
     [GenerateShapeFor<Guid>]
     [GenerateShapeFor<List<string>>]
     [GenerateShapeFor<Dictionary<Guid, DateTime>>]

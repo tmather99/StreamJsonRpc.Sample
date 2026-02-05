@@ -19,8 +19,12 @@ public interface IServer
     Task SetObserver(IObserver<int> observer, CancellationToken cancellationToken);
     Task<IObserver<int>> GetObserver(CancellationToken cancellationToken);
 
+    Task SetCounterObserver(IObserver<int> observer, Guid guid, CancellationToken cancellationToken);
+    Task<ICounterObserver> GetCounterObserver(CancellationToken cancellationToken);
+
     Task SetAsyncEnumerable(IAsyncEnumerable<int> values, CancellationToken cancellationToken);
     Task<IAsyncEnumerable<int>> GetAsyncEnumerable(CancellationToken cancellationToken);
+    Task<IAsyncEnumerable<int>> ProcessAsyncEnumerable(ICounterObserver progress, CancellationToken cancellationToken);
 
     // heatbeat start/stop operations
     Task SendTicksAsync(Guid guid);

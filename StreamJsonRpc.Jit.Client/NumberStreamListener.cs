@@ -2,7 +2,7 @@
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
-using StreamJsonRpc.Jit.Client.Common.MouseStream;
+using StreamJsonRpc.Jit.Client.Common.NumberStream;
 
 namespace StreamJsonRpc.Jit.Client;
 

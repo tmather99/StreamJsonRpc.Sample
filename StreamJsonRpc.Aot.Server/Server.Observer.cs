@@ -16,8 +16,9 @@ public partial class Server : IServer
         lock (this.observers)
         {
             this.observers.Add(observer);
+        }
 
-            Observable.Interval(TimeSpan.FromMilliseconds(300))
+        Observable.Interval(TimeSpan.FromMilliseconds(300))
                 .Subscribe(i =>
                 {
                     if (isCancel) return;
@@ -28,7 +29,6 @@ public partial class Server : IServer
                     Console.ResetColor();
                     observer.OnNext(value);
                 });
-        }
 
         return Task.CompletedTask;
     }

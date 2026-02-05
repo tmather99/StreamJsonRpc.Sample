@@ -46,18 +46,27 @@ public partial class Server
         // Subscribe to the global mouse subject
         _mouseSubscription = _globalMouseSubject.Subscribe(OnNext, OnError, OnCompleted);
 
-        async void OnNext(MouseEventData mouseEvent)
+        async void OnNext(MouseEventData e)
         {
             try
             {
                 if (isCancel) return;
                 
-                Console.ForegroundColor = ConsoleColor.DarkGray;
-                Console.WriteLine($"      Mouse {mouseEvent.Action} (X,Y) = ({mouseEvent.X}, {mouseEvent.Y}) -> {clientGuid}");
-                Console.ResetColor();
+                if (e.Action == MouseAction.LeftClick)
+                {
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.WriteLine($"          -> Click detected: {e.Action} (X,Y) = ({e.X}, {e.Y})");
+                    Console.ResetColor();
+                }
+                else
+                {
+                    Console.ForegroundColor = ConsoleColor.DarkGray;
+                    Console.WriteLine($"      Mouse {e.Action} (X,Y) = ({e.X}, {e.Y}) -> {clientGuid}");
+                    Console.ResetColor();
+                }
 
                 // Call back to client using notification
-                await _mouseStreamListener.OnNextValue(mouseEvent);
+                await _mouseStreamListener.OnNextValue(e);
             }
             catch (Exception ex)
             {

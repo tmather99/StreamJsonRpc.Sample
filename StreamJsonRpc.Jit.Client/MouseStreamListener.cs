@@ -2,18 +2,18 @@ using System;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
-using StreamJsonRpc.Jit.Client.Common.NumberStream;
+using StreamJsonRpc.Jit.Client.Common.MouseStream;
 
 namespace StreamJsonRpc.Jit.Client;
 
 // Client-side implementation that receives mouse callbacks from server
 public class MouseStreamListener : IMouseStreamListener
 {
-    private readonly Subject<MouseEventData> _subject = new Subject<MouseEventData>();
+    private readonly Subject<CountData> _subject = new Subject<CountData>();
 
-    public IObservable<MouseEventData> MouseEvents => _subject;
+    public IObservable<CountData> MouseEvents => _subject;
 
-    public Task OnNextValue(MouseEventData e)
+    public Task OnNextValue(CountData e)
     {
         Console.ForegroundColor = ConsoleColor.DarkGray;
         Console.WriteLine($"        MouseStreamListener - OnNextValue: {e.Action} (X,Y) = ({e.X}, {e.Y})");

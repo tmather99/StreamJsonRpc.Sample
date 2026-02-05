@@ -1,6 +1,8 @@
-﻿namespace StreamJsonRpc.Aot.Client;
+﻿using StreamJsonRpc.Aot.Common;
 
-public class CounterObserver : IObserver<int>
+namespace StreamJsonRpc.Aot.Client;
+
+public class CounterObserver : ICounterObserver
 {
     public void OnNext(int value)
     {

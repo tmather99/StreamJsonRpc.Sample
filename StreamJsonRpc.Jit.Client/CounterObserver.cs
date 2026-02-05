@@ -2,7 +2,7 @@
 
 namespace StreamJsonRpc.Jit.Client;
 
-public class CounterObserver : IObserver<int>
+public class CounterObserver : ICounterObserver
 {
     public void OnNext(int value)
     {

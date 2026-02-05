@@ -37,4 +37,28 @@ public partial class Server : IServer
 
         return true;
     }
+
+    public Task SetCounterObserver(IObserver<int> observer, Guid oid, CancellationToken ct)
+    {
+        Console.WriteLine("  SetCounterObserver");
+
+        lock (this.observers)
+        {
+            this.observers.Add(observer);
+        }
+
+        _ = this.SubscribeToCounterObserverStream(observer, oid);
+
+        return Task.CompletedTask;
+    }
+
+    public Task<ICounterObserver> GetCounterObserver(CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<IAsyncEnumerable<int>> ProcessAsyncEnumerable(ICounterObserver progress, CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
+    }
 }

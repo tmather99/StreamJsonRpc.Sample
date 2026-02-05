@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Threading;
 using StreamJsonRpc;
+using StreamJsonRpc.Jit.Client.Common.MouseStream;
 
 namespace StreamJsonRpc.Jit.Client;
 
@@ -52,6 +53,13 @@ internal class Client
             MouseStreamListener mouseStreamListener = new();
             jsonRpc.AddLocalRpcTarget(mouseStreamListener);
 
+            IObserver<int> counterObserver = new CounterObserver();
+            jsonRpc.AddLocalRpcTarget(counterObserver);
+
+            // AOT Register client callbacks for mouse stream
+            RpcTargetMetadata counterObserverTargetMetadata = RpcTargetMetadata.FromShape<ICounterObserver>();
+            jsonRpc.AddLocalRpcTarget(counterObserverTargetMetadata, counterObserver, null);
+            
             // Start listening for messages
             jsonRpc.StartListening();
 
@@ -153,8 +161,12 @@ internal class Client
         // IObserver<T> marshaling
         async Task Check_IObserver_Marshaling(IServer server)
         {
-            await server.SetObserver(new CounterObserver(), cts.Token);
-            Console.WriteLine($"SetObserver.");
+            //await server.SetObserver(new CounterObserver(), cts.Token);
+            //Console.WriteLine($"SetObserver.");
+
+            ICounterObserver counterObserver = new CounterObserver();
+            await server.SetCounterObserver(counterObserver, Guid.NewGuid(), cts.Token);
+            Console.WriteLine($"SetCounterObserver.");
 
             IObserver<int> observer = await server.GetObserver(cts.Token);
             Console.WriteLine($"GetObserver.");

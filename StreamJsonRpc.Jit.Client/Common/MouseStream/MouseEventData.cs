@@ -4,7 +4,7 @@ using System.Runtime.Serialization;
 namespace StreamJsonRpc.Jit.Client;
 
 [DataContract]
-public class MouseEventData
+public class CountData
 {
     [DataMember(Order = 0)] public int X { get; set; }
 
