@@ -3,6 +3,7 @@ using System.Reactive.Linq;
 using Microsoft.VisualStudio.Threading;
 using StreamJsonRpc;
 using StreamJsonRpc.Aot.Common;
+using StreamJsonRpc.Aot.Common.UserInfoStream;
 
 namespace StreamJsonRpc.Aot.Client;
 
@@ -23,22 +24,12 @@ internal class Client
             // Create the MessagePack handler over the pipe
             jsonRpc = new(MessagePackHandler.Create(pipe));
 
-            // Handle push events from server.
-            jsonRpc.AddLocalRpcMethod("Tick", TickHandler());
-
-            // Handler for server push notifications.
-            Func<int, Task> TickHandler()
-            {
-                return async tickNumber =>
-                {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine($"    Tick {guid} - #{tickNumber}");
-                    Console.ResetColor();
-                };
-            }
+            RegisterTickHandler();
 
             // Register server RPC methods
             IServer server = jsonRpc.Attach<IServer>();
+
+            IUserService userService = jsonRpc.Attach<IUserService>();
 
             // AOT Register client callbacks so server can call back to us
             RpcTargetMetadata targetMetadata = RpcTargetMetadata.FromShape<INumberStreamListener>();
@@ -66,6 +57,12 @@ internal class Client
                 // Test various data type marshaling
                 await Check_DataType_Marshaling(server);
 
+                // Test custom data type marshaling
+                await Check_Custom_DataType_Marshaling(userService);
+
+                // Test various data type marshaling
+                await Check_Custom_DataType_Marshaling(userService);
+
                 // Start server hearbeat ticks
                 await jsonRpc.NotifyAsync("SendTicksAsync", guid);
                 Console.WriteLine($"  SendTicksAsync {guid}");
@@ -85,6 +82,23 @@ internal class Client
 
                 // blocks until canceled via Ctrl+C.
                 await jsonRpc.Completion.WithCancellation(cts.Token);
+            }
+
+            void RegisterTickHandler()
+            {
+                // Handle push events from server.
+                jsonRpc.AddLocalRpcMethod("Tick", TickHandler());
+
+                // Handler for server push notifications.
+                Func<int, Task> TickHandler()
+                {
+                    return async tickNumber =>
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine($"    Tick {guid} - #{tickNumber}");
+                        Console.ResetColor();
+                    };
+                }
             }
         }
         catch (OperationCanceledException)
@@ -131,6 +145,23 @@ internal class Client
 
             // IAsyncEnumerable<T> marshaling
             await Check_IAsyncEnumerable_Marshaling(server);
+        }
+
+        // Custom data type marshaling
+        async Task Check_Custom_DataType_Marshaling(IUserService userService)
+        {
+            UserInfo userInfo = new() {
+                Name = "Alice",
+                Age = 30
+            };
+
+            userInfo = await userService.ProcessUser(userInfo, cts.Token);
+            Console.WriteLine("  ProcessUser");
+            Console.WriteLine($"    -> Clienbt received: {userInfo.Name}, {userInfo.Age}");
+
+            //IAsyncEnumerable<UserInfo> list = await userService.GetList(cts.Token);
+            //Console.WriteLine($"  GetList<UserInfo>:");
+            //Console.WriteLine(string.Join(Environment.NewLine, list.Select((u) => $"    [{u.Name}]: {u.Age}")));
         }
 
         // IObserver<T> marshaling

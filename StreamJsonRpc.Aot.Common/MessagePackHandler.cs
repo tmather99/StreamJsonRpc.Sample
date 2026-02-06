@@ -2,6 +2,7 @@
 using Microsoft;
 using PolyType;
 using StreamJsonRpc.Aot.Common.MouseStream;
+using StreamJsonRpc.Aot.Common.UserInfoStream;
 
 namespace StreamJsonRpc.Aot.Common;
 
@@ -23,11 +24,12 @@ public static partial class NerdbankMessagePack
     public static IJsonRpcMessageFormatter CreateFormatter()
     {
         return new NerdbankMessagePackFormatter() {
-            TypeShapeProvider = Witness.GeneratedTypeShapeProvider,
+            TypeShapeProvider = Witness.GeneratedTypeShapeProvider
         };
     }
 
-    [GenerateShapeFor<Dictionary<int, MouseAction>>]
-    [GenerateShapeFor<Dictionary<int, MouseEventData>>]
+    [GenerateShapeFor<MouseAction>]
+    [GenerateShapeFor<MouseEventData>]
+    [GenerateShapeFor<UserInfo>]
     public partial class Witness;
 }

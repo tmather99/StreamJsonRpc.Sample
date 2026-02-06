@@ -1,5 +1,3 @@
-using System.Reactive.Linq;
-using System.Runtime.CompilerServices;
 using StreamJsonRpc.Aot.Common;
 
 namespace StreamJsonRpc.Aot.Server;
@@ -17,13 +15,13 @@ public partial class Server : IServer
     Task<List<string>> IServer.GetListAsync()
     {
         Console.WriteLine("  GetListAsync.");
-        List<string> list = new List<string>
-        {
+        List<string> list =
+        [
             "alpha",
             "beta",
             "gamma",
             DateTime.UtcNow.ToString("O"), // ISO 8601 round-trip format
-        };
+        ];
 
         return Task.FromResult(list);
     }
@@ -31,7 +29,7 @@ public partial class Server : IServer
     Task<Dictionary<Guid, DateTime>> IServer.GetDictionaryAsync()
     {
         Console.WriteLine("  GetDictionaryAsync.");
-        Dictionary<Guid, DateTime> dict = new Dictionary<Guid, DateTime> {
+        Dictionary<Guid, DateTime> dict = new() {
             [Guid.NewGuid()] = DateTime.UtcNow,
             [Guid.NewGuid()] = DateTime.UtcNow.AddMinutes(-5),
             [Guid.NewGuid()] = DateTime.UtcNow.AddDays(1),
@@ -43,7 +41,7 @@ public partial class Server : IServer
     public Task<Dictionary<string, string>> GetTableAsync()
     {
         Console.WriteLine("  GetTableAsync.");
-        var table = new Dictionary<string, string> {
+        Dictionary<string, string> table = new() {
             ["Name"] = "Alice",
             ["Role"] = "Tester",
             ["Environment"] = "Dev",

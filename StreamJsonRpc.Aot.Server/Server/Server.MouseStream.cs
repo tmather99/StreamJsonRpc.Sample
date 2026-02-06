@@ -11,15 +11,14 @@ public partial class Server
 
     // Static subject to aggregate mouse events from global capture service
     private static readonly Subject<MouseEventData> _globalMouseSubject = new();
-    
+
     private IDisposable _mouseSubscription = null!;
     private readonly Subject<MouseEventData> _mouseSubject = new();
 
     // Static method called by the global mouse capture service
     public static void PublishMouseEventGlobal(int x, int y, MouseAction action)
     {
-        var mouseEvent = new MouseEventData
-        {
+        var mouseEvent = new MouseEventData {
             X = x,
             Y = y,
             Action = action,
@@ -51,11 +50,27 @@ public partial class Server
             try
             {
                 if (isCancel) return;
-                
+
                 if (e.Action == MouseAction.LeftClick)
                 {
+                    e.ValuedList = [
+                        Guid.NewGuid().ToString(),
+                        Guid.NewGuid().ToString()
+                    ];
+
+                    e.ValuedDictionary = new Dictionary<Guid, string> {
+                        [Guid.NewGuid()] = $"{Guid.NewGuid()}",
+                        [Guid.NewGuid()] = $"{Guid.NewGuid()}",
+                    };
+
                     Console.ForegroundColor = ConsoleColor.Yellow;
                     Console.WriteLine($"          -> Click detected: {e.Action} (X,Y) = ({e.X}, {e.Y})");
+                    Console.WriteLine($"                  TimeStamp: {e.Timestamp}");
+                    Console.WriteLine($"                     Values:\n" +
+                                      $"                       [{string.Join(", ", e.ValuedList)}]");
+                    Console.WriteLine($"                 Dictionary:\n" +
+                                      $"                       {string.Join("\n                       ",
+                                          e.ValuedDictionary.Select(kv => $"{kv.Key} = {kv.Value:O}"))}");
                     Console.ResetColor();
                 }
                 else
@@ -94,8 +109,7 @@ public partial class Server
     // Simulate mouse events (call this method to publish mouse events)
     public void PublishMouseEvent(int x, int y, MouseAction action)
     {
-        var mouseEvent = new MouseEventData
-        {
+        var mouseEvent = new MouseEventData {
             X = x,
             Y = y,
             Action = action,

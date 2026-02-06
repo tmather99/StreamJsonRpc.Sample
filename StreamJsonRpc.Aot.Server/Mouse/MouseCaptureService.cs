@@ -1,9 +1,7 @@
-using System;
 using SharpHook;
-using SharpHook.Native;
 using StreamJsonRpc.Aot.Common.MouseStream;
 
-namespace StreamJsonRpc.Aot.Server;
+namespace StreamJsonRpc.Aot.Server.Mouse;
 
 public class MouseCaptureService : IDisposable
 {
@@ -56,8 +54,7 @@ public class MouseCaptureService : IDisposable
 
     private void OnMousePressed(object? sender, MouseHookEventArgs e)
     {
-        var action = (int)e.Data.Button switch
-        {
+        var action = (int)e.Data.Button switch {
             1 => MouseAction.LeftClick,
             2 => MouseAction.RightClick,
             3 => MouseAction.MiddleClick,
@@ -66,7 +63,7 @@ public class MouseCaptureService : IDisposable
 
         _onMouseEvent(e.Data.X, e.Data.Y, action);
     }
-        
+
     private void OnMouseReleased(object? sender, MouseHookEventArgs e)
     {
         // Optional: track double-clicks by timing between releases

@@ -1,7 +1,10 @@
 ﻿using System.IO.Pipes;
 using StreamJsonRpc;
 using StreamJsonRpc.Aot.Common;
+using StreamJsonRpc.Aot.Common.UserInfoStream;
 using StreamJsonRpc.Aot.Server;
+using StreamJsonRpc.Aot.Server.Mouse;
+using StreamJsonRpc.Aot.Server.UserService;
 
 internal class Program
 {
@@ -59,7 +62,7 @@ internal class Program
         static void StartMouseCaptureService()
         {
             _mouseCaptureService = new MouseCaptureService(Server.PublishMouseEventGlobal);
-            
+
             _ = Task.Run(async () =>
             {
                 try
@@ -79,13 +82,11 @@ internal class Program
             await Console.Error.WriteLineAsync($"  Connection request #{requestId} received.");
 
             // Set up JSON-RPC over the named pipe
-            JsonRpc jsonRpc = new(MessagePackHandler.Create(pipe)) 
-            {
+            JsonRpc jsonRpc = new(MessagePackHandler.Create(pipe)) {
                 CancelLocallyInvokedMethodsWhenConnectionIsClosed = true
             };
 
-            jsonRpc.Disconnected += static async delegate (object? o, JsonRpcDisconnectedEventArgs e)
-            {
+            jsonRpc.Disconnected += static async delegate (object? o, JsonRpcDisconnectedEventArgs e) {
                 Console.WriteLine("\nRPC connection closed");
                 Console.WriteLine($"  Reason: {e.Reason}");
                 Console.WriteLine($"  Description: {e.Description}");
@@ -93,16 +94,25 @@ internal class Program
                     Console.WriteLine($"  Exception: {e.Exception}");
             };
 
-            RpcTargetMetadata targetMetadata = RpcTargetMetadata.FromShape<IServer>();
-            Server server = new Server(jsonRpc);
-            jsonRpc.AddLocalRpcTarget(targetMetadata, server, null);
+            RegisterTypes(jsonRpc);
 
             jsonRpc.StartListening();
 
             //await jsonRpc.Completion;
             await Console.Error.WriteLineAsync($"  Request #{requestId} terminated.");
         }
-    }
-    
 
+
+        // Do not use reflection. Everything must be known at compile time.
+        static void RegisterTypes(JsonRpc jsonRpc)
+        {
+            RpcTargetMetadata targetMetadata = RpcTargetMetadata.FromShape<IServer>();
+            Server server = new Server(jsonRpc);
+            jsonRpc.AddLocalRpcTarget(targetMetadata, server, null);
+
+            targetMetadata = RpcTargetMetadata.FromShape<IUserService>();
+            UserService service = new UserService(jsonRpc);
+            jsonRpc.AddLocalRpcTarget(targetMetadata, service, null);
+        }
+    }
 }

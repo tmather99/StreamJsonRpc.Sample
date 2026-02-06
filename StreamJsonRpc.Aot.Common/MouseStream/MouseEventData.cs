@@ -6,6 +6,8 @@ public class MouseEventData
     public int Y { get; set; }
     public MouseAction Action { get; set; }
     public DateTime Timestamp { get; set; }
+    public List<string> ValuedList { get; set; } = [];
+    public Dictionary<Guid, string> ValuedDictionary { get; set; } = [];
 }
 
 public enum MouseAction

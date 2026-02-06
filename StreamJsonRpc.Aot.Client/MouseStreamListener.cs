@@ -45,6 +45,12 @@ public class MouseStreamListener : IMouseStreamListener
                 {
                     Console.ForegroundColor = ConsoleColor.Yellow;
                     Console.WriteLine($"           -> Click detected: {e.Action} (X,Y) = ({e.X}, {e.Y})");
+                    Console.WriteLine($"                   TimeStamp: {e.Timestamp}");
+                    Console.WriteLine($"                      Values:\n" +
+                                      $"                        [{string.Join(", ", e.ValuedList)}]");
+                    Console.WriteLine($"                  Dictionary:\n" +
+                                      $"                        {string.Join("\n                        ",
+                                          e.ValuedDictionary.Select(kv => $"{kv.Key} = {kv.Value:O}"))}");
                     Console.ResetColor();
                 },
                 () =>
