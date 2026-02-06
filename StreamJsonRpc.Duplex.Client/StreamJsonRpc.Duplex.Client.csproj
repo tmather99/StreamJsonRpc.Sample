@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net10.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<NoWarn>$(NoWarn);StreamJsonRpc0003;CS8425</NoWarn>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="StreamJsonRpc" Version="2.24.84" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\StreamJsonRpc.Duplex.Shared\StreamJsonRpc.Duplex.Shared.csproj" />
+	</ItemGroup>
+
+</Project>

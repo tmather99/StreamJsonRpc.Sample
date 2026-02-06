@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
 		<TargetFramework>net48</TargetFramework>
-		<NoWarn>$(NoWarn);StreamJsonRpc0003</NoWarn>
+		<NoWarn>$(NoWarn);StreamJsonRpc0003;CS8425</NoWarn>
 		<Nullable>enable</Nullable>
 		<LangVersion>latest</LangVersion>
 	</PropertyGroup>

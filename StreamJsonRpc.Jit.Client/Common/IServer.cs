@@ -24,7 +24,6 @@ public interface IServer
     Task SetAsyncEnumerable(IAsyncEnumerable<int> values, CancellationToken ct);
     Task<IAsyncEnumerable<int>> GetAsyncEnumerable(CancellationToken ct);
     Task<IAsyncEnumerable<int>> ProcessAsyncEnumerable(IObserver<int> progress, CancellationToken ct);
-    Task<IAsyncEnumerable<int>> DuplexAsyncEnumerable(IAsyncEnumerable<int> tag, CancellationToken ct);
 
     // heatbeat start/stop operations
     Task SendTicksAsync(Guid guid);

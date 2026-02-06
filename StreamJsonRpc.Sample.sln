@@ -55,6 +55,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Notify", "Notify", "{EDA3D8
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StreamJsonRpc.Aot.Common", "StreamJsonRpc.Aot.Common\StreamJsonRpc.Aot.Common.csproj", "{10B74534-4EC8-434C-A22A-667DEA323FDB}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DuplexStream", "DuplexStream", "{E680C375-253C-4D89-B681-94B6E36C4C46}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StreamJsonRpc.Duplex.Client", "StreamJsonRpc.Duplex.Client\StreamJsonRpc.Duplex.Client.csproj", "{7C0160A0-AF1D-3C1C-BCCB-0AF29713DC50}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StreamJsonRpc.Duplex.Shared", "StreamJsonRpc.Duplex.Shared\StreamJsonRpc.Duplex.Shared.csproj", "{A18E91E6-63FB-0C70-CB33-34CB3BB33B4A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StreamJsonRpc.Duplex.Server", "StreamJsonRpc.Duplex.Server\StreamJsonRpc.Duplex.Server.csproj", "{42437356-4E3B-94C6-1353-C54324100102}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -117,6 +125,18 @@ Global
 		{10B74534-4EC8-434C-A22A-667DEA323FDB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{10B74534-4EC8-434C-A22A-667DEA323FDB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{10B74534-4EC8-434C-A22A-667DEA323FDB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7C0160A0-AF1D-3C1C-BCCB-0AF29713DC50}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7C0160A0-AF1D-3C1C-BCCB-0AF29713DC50}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7C0160A0-AF1D-3C1C-BCCB-0AF29713DC50}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7C0160A0-AF1D-3C1C-BCCB-0AF29713DC50}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A18E91E6-63FB-0C70-CB33-34CB3BB33B4A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A18E91E6-63FB-0C70-CB33-34CB3BB33B4A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A18E91E6-63FB-0C70-CB33-34CB3BB33B4A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A18E91E6-63FB-0C70-CB33-34CB3BB33B4A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{42437356-4E3B-94C6-1353-C54324100102}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{42437356-4E3B-94C6-1353-C54324100102}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{42437356-4E3B-94C6-1353-C54324100102}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{42437356-4E3B-94C6-1353-C54324100102}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -134,6 +154,9 @@ Global
 		{662D4E79-E7E9-A17F-5980-6505D0AF926D} = {EDA3D87B-FC95-4C83-8EC4-81EEA61BEC71}
 		{BAACEC41-120B-C9A8-0902-4BEEF05ADBFB} = {EDA3D87B-FC95-4C83-8EC4-81EEA61BEC71}
 		{10B74534-4EC8-434C-A22A-667DEA323FDB} = {40F0EBA1-5464-4A6A-99DB-84F7E2629211}
+		{7C0160A0-AF1D-3C1C-BCCB-0AF29713DC50} = {E680C375-253C-4D89-B681-94B6E36C4C46}
+		{A18E91E6-63FB-0C70-CB33-34CB3BB33B4A} = {E680C375-253C-4D89-B681-94B6E36C4C46}
+		{42437356-4E3B-94C6-1353-C54324100102} = {E680C375-253C-4D89-B681-94B6E36C4C46}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D362BF52-6BAF-410F-A6F8-44CD54B274F0}

@@ -1,5 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 using StreamJsonRpc.Aot.Common;
+using static StreamJsonRpc.Aot.Server.Server;
 
 namespace StreamJsonRpc.Aot.Server;
 
@@ -31,7 +32,7 @@ public partial class Server : IServer
 
         return Task.FromResult(Stream());
 
-        async IAsyncEnumerable<int> GetValues([EnumeratorCancellation] CancellationToken ct)
+        async IAsyncEnumerable<int> GetValues(CancellationToken ct)
         {
             for (int i = 1; i <= 20; i++)
             {
@@ -49,62 +50,58 @@ public partial class Server : IServer
         
         return Task.FromResult(Generate());
 
-        async IAsyncEnumerable<int> Generate([EnumeratorCancellation] CancellationToken token = default)
+        async IAsyncEnumerable<int> Generate(CancellationToken token = default)
         {
             for (int i = 1; i <= 10; i++)
             {
                 token.ThrowIfCancellationRequested();
 
                 // Simulate work
-                await Task.Delay(300, token);
+                await Task.Delay(100, token);
 
                 // 🔹 Progress callback (push to client immediately)
                 progress?.OnNext(i * 10); // e.g., % progress
 
                 // 🔹 Streamed result value
-                Console.WriteLine($"Server yielding: {i}");
+                Console.WriteLine($"    -> Server yielding: {i}");
                 yield return i;
             }
 
+            // Final progress callback to indicate completion
             progress?.OnCompleted();
         }
     }
 
-    // May not needed, but just to test duplex streaming with client pushing progress updates using IAsyncEnumerable
+    // Duplex streaming with proper synchronization and cancellation
     public Task<IAsyncEnumerable<int>> DuplexAsyncEnumerable(IAsyncEnumerable<int> clientStream, CancellationToken ct)
     {
-        Console.WriteLine("ProcessAsyncEnumerable (duplex streaming) invoked.");
+        Console.WriteLine("  DuplexAsyncEnumerable.");
 
-        return Task.FromResult(Generate());
+        Console.WriteLine("SERVER: method entered");
 
-        async IAsyncEnumerable<int> Generate([EnumeratorCancellation] CancellationToken token = default)
+        // 🔥 START READING CLIENT STREAM NOW
+        var readClientTask = Task.Run(async () =>
         {
-            int lastProgress = 0;
-
-            // Read client progress in background
-            var serverTask = Task.Run(async () =>
+            await foreach (int x in clientStream.WithCancellation(ct))
             {
-                await foreach (int p in clientStream.WithCancellation(token))
-                {
-                    Console.WriteLine($"Server received progress from client: {p}");
-                    lastProgress = p;
-                }
-            }, token);
-
-            // Meanwhile server produces its own stream
-            for (int i = 1; i <= 10; i++)
-            {
-                token.ThrowIfCancellationRequested();
-
-                await Task.Delay(400, token);
-
-                int result = i * 100 + lastProgress; // mix both sides just for testing
-                Console.WriteLine($"Server yielding result: {result}");
-
-                yield return result;
+                Console.WriteLine($"SERVER RECEIVED: {x}");
             }
+            Console.WriteLine("SERVER: client stream finished");
+        }, ct);
 
-            await serverTask; // ensure we consumed client stream
+        // Return server stream immediately
+        return Task.FromResult(ServerStream(ct));
+    }
+
+    private async IAsyncEnumerable<int> ServerStream(CancellationToken ct)
+    {
+        for (int i = 1; i <= 5; i++)
+        {
+            await Task.Delay(500, ct);
+            Console.WriteLine($"SERVER SENDING: {i * 100}");
+            yield return i * 100;
         }
+
+        Console.WriteLine("SERVER: outgoing stream finished");
     }
 }

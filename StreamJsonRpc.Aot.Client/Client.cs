@@ -1,4 +1,4 @@
-using System.IO.Pipes;
+﻿using System.IO.Pipes;
 using System.Reactive.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.VisualStudio.Threading;
@@ -146,12 +146,12 @@ internal class Client
             //    await server.SetNumberStreamListener(new NumberStreamListener(), cts.Token);
             //
 
-            Console.WriteLine($"SetCounterObserver.");
+            Console.WriteLine($"  SetCounterObserver.");
 
 
             // Get observer from server and push values to it
             IObserver<int> observer = await server.GetObserver(cts.Token);
-            Console.WriteLine($"GetObserver.");
+            Console.WriteLine($"  GetObserver.");
 
             Observable.Interval(TimeSpan.FromMilliseconds(500))
                 .Subscribe(i =>
@@ -168,19 +168,10 @@ internal class Client
             Console.WriteLine($"  GetAsyncEnumerable:");
             Console.WriteLine("    [" + string.Join(", ", await stream.ToListAsync(cts.Token)) + "]");
 
-            // Push async stream to server and process it with client-side progress reporting
-            await ProcessAsyncEnumerable(server);
-
-            // Duplex async stream between client and server
-            //await DuplexAsyncEnumerable(server);
-        }
-
-        // Push async stream to server
-        async Task ProcessAsyncEnumerable(IServer server1)
-        {
-            await server1.SetAsyncEnumerable(ProduceNumbers(cts.Token), cts.Token);
+            await server.SetAsyncEnumerable(ProduceNumbers(cts.Token), cts.Token);
             Console.WriteLine($"  SetAsyncEnumerable.");
-            async IAsyncEnumerable<int> ProduceNumbers([EnumeratorCancellation] CancellationToken ct = default)
+
+            async IAsyncEnumerable<int> ProduceNumbers(CancellationToken ct = default)
             {
                 for (int i = 1; i <= 10; i++)
                 {
@@ -189,42 +180,31 @@ internal class Client
                 }
             }
 
-            // Process server stream with client-side progress reporting
-            IAsyncEnumerable<int> valueStream = await server1.ProcessAsyncEnumerable(new ProgressObserver(), cts.Token);
-            Console.WriteLine($"  ProcessAsyncEnumerable.");
-            await foreach (int item in valueStream.WithCancellation(cts.Token))
-            {
-                Console.WriteLine($"Client received stream value: {item}");
-            }
+            // Push async stream to server and process it with client-side progress reporting
+            await ProcessAsyncEnumerable(server);
         }
 
-        // Duplex async stream between client and server
-        async Task DuplexAsyncEnumerable(IServer server)
+        // Push async stream to server
+        async Task ProcessAsyncEnumerable(IServer server)
         {
-            async IAsyncEnumerable<int> ClientStream([EnumeratorCancellation] CancellationToken ct)
+            // Process server stream with client-side progress reporting
+            IAsyncEnumerable<int> valueStream = await server.ProcessAsyncEnumerable(new ProgressObserver(), cts.Token);
+            Console.WriteLine($"  ProcessAsyncEnumerable.");
+
+            await foreach (int item in valueStream.WithCancellation(cts.Token))
             {
-                for (int i = 10; i <= 100; i += 10)
-                {
-                    await Task.Delay(300, ct);
-                    Console.WriteLine($"Client sending: {i}");
-                    yield return i;
-                }
+                Console.WriteLine($"    Client received stream value: {item}");
             }
 
-            IAsyncEnumerable<int> serverStream = await server.DuplexAsyncEnumerable(ClientStream(cts.Token), cts.Token);
-
-            await foreach (int value in serverStream.WithCancellation(cts.Token))
-            {
-                Console.WriteLine($"Client received: {value}");
-            }
+            Console.WriteLine("\n    -- Server stream completed successfully --\n");
         }
     }
 
     // Implementation of IObserver<int> to receive progress updates from server
     class ProgressObserver : IObserver<int>
     {
-        public void OnNext(int value) => Console.WriteLine($"Progress: {value}%");
-        public void OnCompleted() => Console.WriteLine("Progress complete");
+        public void OnNext(int value) => Console.WriteLine($"      Progress: {value}%");
+        public void OnCompleted() => Console.WriteLine("\n      Progress complete.");
         public void OnError(Exception error) => Console.WriteLine(error);
     }
 }
