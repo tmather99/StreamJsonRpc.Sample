@@ -1,6 +1,5 @@
 ﻿using System.IO.Pipes;
 using System.Reactive.Linq;
-using System.Runtime.CompilerServices;
 using Microsoft.VisualStudio.Threading;
 using StreamJsonRpc;
 using StreamJsonRpc.Aot.Common;
@@ -133,7 +132,7 @@ internal class Client
             // IAsyncEnumerable<T> marshaling
             await Check_IAsyncEnumerable_Marshaling(server);
         }
-        
+
         // IObserver<T> marshaling
         async Task Check_IObserver_Marshaling(IServer server)
         {

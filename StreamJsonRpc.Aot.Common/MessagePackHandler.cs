@@ -1,5 +1,4 @@
 ﻿using System.IO.Pipes;
-using System.Text.Json.Serialization;
 using Microsoft;
 using PolyType;
 using StreamJsonRpc.Aot.Common.MouseStream;
@@ -11,7 +10,7 @@ public static class MessagePackHandler
     public static IJsonRpcMessageHandler Create(PipeStream pipe, string formatter = "NerdbankMessagePack")
     {
         return formatter switch {
-            "JSON" => new HeaderDelimitedMessageHandler(pipe, SystemTextJson.CreateFormatter()),
+            "JSON" => new HeaderDelimitedMessageHandler(pipe, new JsonMessageFormatter()),
             "MessagePack" => new LengthHeaderMessageHandler(pipe, pipe, new MessagePackFormatter()),
             "NerdbankMessagePack" => new LengthHeaderMessageHandler(pipe, pipe, NerdbankMessagePack.CreateFormatter()),
             _ => throw Assumes.NotReachable(),
@@ -23,8 +22,7 @@ public static partial class NerdbankMessagePack
 {
     public static IJsonRpcMessageFormatter CreateFormatter()
     {
-        return new NerdbankMessagePackFormatter() 
-        {
+        return new NerdbankMessagePackFormatter() {
             TypeShapeProvider = Witness.GeneratedTypeShapeProvider,
         };
     }
@@ -32,20 +30,4 @@ public static partial class NerdbankMessagePack
     [GenerateShapeFor<Dictionary<int, MouseAction>>]
     [GenerateShapeFor<Dictionary<int, MouseEventData>>]
     public partial class Witness;
-}
-
-public static partial class SystemTextJson
-{
-    public static IJsonRpcMessageFormatter CreateFormatter()
-    {
-        return new SystemTextJsonFormatter() {
-            JsonSerializerOptions = {
-                TypeInfoResolver = SourceGenerationContext.Default
-            },
-        };
-    }
-
-    [JsonSerializable(typeof(Dictionary<int, MouseAction>))]
-    [JsonSerializable(typeof(Dictionary<int, MouseEventData>))]
-    private partial class SourceGenerationContext : JsonSerializerContext;
 }

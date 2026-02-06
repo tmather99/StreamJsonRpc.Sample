@@ -1,31 +1,19 @@
-using System.Runtime.Serialization;
-
 namespace StreamJsonRpc.Aot.Common.MouseStream;
 
-[DataContract]
 public class MouseEventData
 {
-    [DataMember(Order = 0)] public int X { get; set; }
-
-    [DataMember(Order = 1)] public int Y { get; set; }
-
-    [DataMember(Order = 2)] public MouseAction Action { get; set; }
-
-    [DataMember(Order = 3)] public DateTime Timestamp { get; set; }
+    public int X { get; set; }
+    public int Y { get; set; }
+    public MouseAction Action { get; set; }
+    public DateTime Timestamp { get; set; }
 }
 
-[DataContract]
 public enum MouseAction
 {
-    [EnumMember] Move = 0,
-
-    [EnumMember] LeftClick = 1,
-
-    [EnumMember] RightClick = 2,
-
-    [EnumMember] MiddleClick = 3,
-
-    [EnumMember] DoubleClick = 4,
-
-    [EnumMember] Scroll = 5
+    Move = 0,
+    LeftClick = 1,
+    RightClick = 2,
+    MiddleClick = 3,
+    DoubleClick = 4,
+    Scroll = 5
 }

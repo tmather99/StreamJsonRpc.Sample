@@ -3,12 +3,10 @@ using System.Collections.Generic;
 using System.IO.Pipes;
 using System.Linq;
 using System.Reactive.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Threading;
 using StreamJsonRpc;
-using StreamJsonRpc.Jit.Client.Common.MouseStream;
 
 namespace StreamJsonRpc.Jit.Client;
 
@@ -137,7 +135,7 @@ internal class Client
             // IAsyncEnumerable<T> marshaling
             await Check_IAsyncEnumerable_Marshaling(server);
         }
-        
+
         // IObserver<T> marshaling
         async Task Check_IObserver_Marshaling(IServer server)
         {
@@ -155,7 +153,7 @@ internal class Client
             Observable.Interval(TimeSpan.FromMilliseconds(500))
                 .Subscribe(i => { observer.OnNext(-1); });
         }
-        
+
         // IAsyncEnumerable<T> marshaling
         async Task Check_IAsyncEnumerable_Marshaling(IServer server)
         {
