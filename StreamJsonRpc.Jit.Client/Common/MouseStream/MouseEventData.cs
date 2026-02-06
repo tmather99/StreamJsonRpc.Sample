@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace StreamJsonRpc.Jit.Client;
 
@@ -8,6 +9,8 @@ public class CountData
     public int Y { get; set; }
     public MouseAction Action { get; set; }
     public DateTime Timestamp { get; set; }
+    public List<string> ValuedList { get; set; } = [];
+    public Dictionary<Guid, string> ValuedDictionary { get; set; } = [];
 }
 
 public enum MouseAction
