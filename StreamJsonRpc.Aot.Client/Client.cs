@@ -19,6 +19,7 @@ internal class Client
             // Create the MessagePack handler over the pipe
             jsonRpc = new(MessagePackHandler.Create(pipe));
 
+            // Register client callback handlers for server push notifications
             RegisterTickHandler();
 
             // Register server RPC methods
@@ -27,44 +28,16 @@ internal class Client
             // Register user service RPC methods
             IUserService userService = jsonRpc.Attach<IUserService>();
 
-            // AOT Register client callbacks using IStreamListener<T> marshaling
-            RpcTargetMetadata targetMetadata = RpcTargetMetadata.FromShape<INumberStreamListener>();
-            NumberStreamListener numberStreamListener = new(server);
-            jsonRpc.AddLocalRpcTarget(targetMetadata, numberStreamListener, null);
-
-            // AOT Register client callbacks for mouse stream using IStreamListener<T> marshaling
-            RpcTargetMetadata mouseTargetMetadata = RpcTargetMetadata.FromShape<IMouseStreamListener>();
-            MouseStreamListener mouseStreamListener = new(server);
-            jsonRpc.AddLocalRpcTarget(mouseTargetMetadata, mouseStreamListener, null);
-
-            // AOT Register client callbacks for counter observer stream using IObservable<T> marshaling
-            RpcTargetMetadata counterObserverTargetMetadata = RpcTargetMetadata.FromShape<ICounterObserver>();
-            ICounterObserver counterObserverStreamListener = new CounterObserver();
-            jsonRpc.AddLocalRpcTarget(counterObserverTargetMetadata, counterObserverStreamListener, null);
+            // Register client callback handlers for server streams
+            NumberStreamListener numberStreamListener = GetNumberStreamListener(server);
+            MouseStreamListener mouseStreamListener = GetMouseStreamListener(server);
+            ICounterObserver counterObserverStreamListener = GetCounterObserver();
 
             // Start listening for messages
             jsonRpc.StartListening();
 
             // Run the main client logic
             await RunAsync();
-
-            // Handler for server push notifications.
-            void RegisterTickHandler()
-            {
-                // Handle push events from server.
-                jsonRpc.AddLocalRpcMethod("Tick", TickHandler());
-
-                // Handler for server push notifications.
-                Func<int, Task> TickHandler()
-                {
-                    return async tickNumber =>
-                    {
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine($"    Tick {guid} - #{tickNumber}");
-                        Console.ResetColor();
-                    };
-                }
-            }
 
             // Main client logic
             async Task RunAsync()
@@ -93,6 +66,54 @@ internal class Client
                     // blocks until canceled via Ctrl+C.
                     await jsonRpc.Completion.WithCancellation(cts.Token);
                 }
+            }
+
+            // Handler for server push notifications.
+            void RegisterTickHandler()
+            {
+                // Handle push events from server.
+                jsonRpc.AddLocalRpcMethod("Tick", TickHandler());
+
+                // Handler for server push notifications.
+                Func<int, Task> TickHandler()
+                {
+                    return async tickNumber =>
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine($"    Tick {guid} - #{tickNumber}");
+                        Console.ResetColor();
+                    };
+                }
+            }
+
+            // Local helper functions to register client callbacks for server streams
+            NumberStreamListener GetNumberStreamListener(IServer server)
+            {
+                // AOT Register client callbacks using IStreamListener<T> marshaling
+                RpcTargetMetadata targetMetadata = RpcTargetMetadata.FromShape<INumberStreamListener>();
+                NumberStreamListener numberStreamListener = new(server);
+                jsonRpc.AddLocalRpcTarget(targetMetadata, numberStreamListener, null);
+                return numberStreamListener;
+            }
+
+            // Local helper functions to register client callbacks for server streams
+            MouseStreamListener GetMouseStreamListener(IServer server)
+            {
+                // AOT Register client callbacks for mouse stream using IStreamListener<T> marshaling
+                RpcTargetMetadata mouseTargetMetadata = RpcTargetMetadata.FromShape<IMouseStreamListener>();
+                MouseStreamListener mouseStreamListener = new(server);
+                jsonRpc.AddLocalRpcTarget(mouseTargetMetadata, mouseStreamListener, null);
+                return mouseStreamListener;
+            }
+
+            // Local helper functions to register client callbacks for server streams
+            ICounterObserver GetCounterObserver()
+            {
+                // AOT Register client callbacks for counter observer stream using IObservable<T> marshaling
+                RpcTargetMetadata counterObserverTargetMetadata = RpcTargetMetadata.FromShape<ICounterObserver>();
+                ICounterObserver counterObserver = new CounterObserver();
+                jsonRpc.AddLocalRpcTarget(counterObserverTargetMetadata, counterObserver, null);
+                return counterObserver;
             }
         }
         catch (OperationCanceledException)

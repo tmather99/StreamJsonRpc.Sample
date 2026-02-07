@@ -30,44 +30,16 @@ internal class Client
             // Register user service RPC methods
             IUserService userService = jsonRpc.Attach<IUserService>();
 
-            // Register client callbacks so server can call back to us
-            NumberStreamListener numberStreamListener = new(server);
-            jsonRpc.AddLocalRpcTarget(numberStreamListener);
-
-            // Register client callbacks for mouse stream
-            MouseStreamListener mouseStreamListener = new(server);
-            jsonRpc.AddLocalRpcTarget(mouseStreamListener);
-
-            IObserver<int> counterObserver = new CounterObserver();
-            jsonRpc.AddLocalRpcTarget(counterObserver);
-
-            // AOT Register client callbacks for mouse stream
-            RpcTargetMetadata counterObserverTargetMetadata = RpcTargetMetadata.FromShape<ICounterObserver>();
-            jsonRpc.AddLocalRpcTarget(counterObserverTargetMetadata, counterObserver, null);
+            // Register client callback handlers for server streams
+            NumberStreamListener numberStreamListener = GetNumberStreamListener(server);
+            MouseStreamListener mouseStreamListener = GetMouseStreamListener(server);
+            ICounterObserver counterObserverStreamListener = GetCounterObserver();
 
             // Start listening for messages
             jsonRpc.StartListening();
 
             // Run the main client logic
             await RunAsync();
-
-            // Handler for server push notifications.
-            void RegisterTickHandler()
-            {
-                // Handle push events from server.
-                jsonRpc.AddLocalRpcMethod("Tick", TickHandler());
-
-                // Handler for server push notifications.
-                Func<int, Task> TickHandler()
-                {
-                    return async tickNumber =>
-                    {
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine($"    Tick {guid} - #{tickNumber}");
-                        Console.ResetColor();
-                    };
-                }
-            }
 
             // Main client logic
             async Task RunAsync()
@@ -96,6 +68,50 @@ internal class Client
                     // blocks until canceled via Ctrl+C.
                     await jsonRpc.Completion.WithCancellation(cts.Token);
                 }
+            }
+
+            // Handler for server push notifications.
+            void RegisterTickHandler()
+            {
+                // Handle push events from server.
+                jsonRpc.AddLocalRpcMethod("Tick", TickHandler());
+
+                // Handler for server push notifications.
+                Func<int, Task> TickHandler()
+                {
+                    return async tickNumber =>
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine($"    Tick {guid} - #{tickNumber}");
+                        Console.ResetColor();
+                    };
+                }
+            }
+
+            // Local helper functions to register client callbacks for server streams
+            NumberStreamListener GetNumberStreamListener(IServer server)
+            {
+                // Register client callbacks so server can call back to us
+                NumberStreamListener numberStreamListener = new(server);
+                jsonRpc.AddLocalRpcTarget(numberStreamListener);
+                return numberStreamListener;
+            }
+
+            // Local helper functions to register client callbacks for server streams
+            MouseStreamListener GetMouseStreamListener(IServer server)
+            {
+                // Register client callbacks for mouse stream
+                MouseStreamListener mouseStreamListener = new(server);
+                jsonRpc.AddLocalRpcTarget(mouseStreamListener);
+                return mouseStreamListener;
+            }
+
+            // Local helper functions to register client callbacks for server streams
+            ICounterObserver GetCounterObserver()
+            {
+                CounterObserver counterObserver = new CounterObserver();
+                jsonRpc.AddLocalRpcTarget(counterObserver);
+                return counterObserver;
             }
         }
         catch (OperationCanceledException)
