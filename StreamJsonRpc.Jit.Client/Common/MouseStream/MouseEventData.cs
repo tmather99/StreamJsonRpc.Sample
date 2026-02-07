@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 
-namespace StreamJsonRpc.Jit.Client;
+namespace StreamJsonRpc.Jit.Client.Common.MouseStream;
 
-public class CountData
+public class MouseEventData
 {
     public int X { get; set; }
     public int Y { get; set; }

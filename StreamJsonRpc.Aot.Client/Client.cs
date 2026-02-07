@@ -14,11 +14,6 @@ internal class Client
     {
         JsonRpc jsonRpc = null!;
 
-        // Subscription to filtered observable
-        IDisposable? numberSubscription = null;
-        IDisposable? mouseClickSubscription = null;
-        IDisposable? mouseMoveSubscription = null;
-
         try
         {
             // Create the MessagePack handler over the pipe
@@ -29,19 +24,20 @@ internal class Client
             // Register server RPC methods
             IServer server = jsonRpc.Attach<IServer>();
 
+            // Register user service RPC methods
             IUserService userService = jsonRpc.Attach<IUserService>();
 
-            // AOT Register client callbacks so server can call back to us
+            // AOT Register client callbacks using IStreamListener<T> marshaling
             RpcTargetMetadata targetMetadata = RpcTargetMetadata.FromShape<INumberStreamListener>();
-            NumberStreamListener numberStreamListener = new();
+            NumberStreamListener numberStreamListener = new(server);
             jsonRpc.AddLocalRpcTarget(targetMetadata, numberStreamListener, null);
 
-            // AOT Register client callbacks for mouse stream
+            // AOT Register client callbacks for mouse stream using IStreamListener<T> marshaling
             RpcTargetMetadata mouseTargetMetadata = RpcTargetMetadata.FromShape<IMouseStreamListener>();
-            MouseStreamListener mouseStreamListener = new();
+            MouseStreamListener mouseStreamListener = new(server);
             jsonRpc.AddLocalRpcTarget(mouseTargetMetadata, mouseStreamListener, null);
 
-            // AOT Register client callbacks for counter observer stream
+            // AOT Register client callbacks for counter observer stream using IObservable<T> marshaling
             RpcTargetMetadata counterObserverTargetMetadata = RpcTargetMetadata.FromShape<ICounterObserver>();
             ICounterObserver counterObserverStreamListener = new CounterObserver();
             jsonRpc.AddLocalRpcTarget(counterObserverTargetMetadata, counterObserverStreamListener, null);
@@ -60,25 +56,15 @@ internal class Client
                 // Test custom data type marshaling
                 await Check_Custom_DataType_Marshaling(userService);
 
-                // Test various data type marshaling
-                await Check_Custom_DataType_Marshaling(userService);
-
                 // Start server hearbeat ticks
                 await jsonRpc.NotifyAsync("SendTicksAsync", guid);
                 Console.WriteLine($"  SendTicksAsync {guid}");
 
-                // Subscribe to filtered number stream
-                numberSubscription = numberStreamListener.CreateFilteredSubscription();
-
                 // Start subscription to server stream
-                await server.SubscribeToNumberStream();
-
-                // Subscribe to mouse events
-                mouseClickSubscription = mouseStreamListener.CreateClickSubscription();
-                mouseMoveSubscription = mouseStreamListener.CreateMovementSubscription();
+                await numberStreamListener.Subscribe();
 
                 // Register to mouse events
-                await server.SubscribeToMouseStream();
+                await mouseStreamListener.Subscribe();
 
                 // blocks until canceled via Ctrl+C.
                 await jsonRpc.Completion.WithCancellation(cts.Token);
@@ -105,10 +91,6 @@ internal class Client
         {
             // stop heartbeat ticks
             await jsonRpc.InvokeAsync("CancelTickOperation", guid);
-
-            numberSubscription?.Dispose();
-            mouseClickSubscription?.Dispose();
-            mouseMoveSubscription?.Dispose();
             throw;  // rethrow to main
         }
         catch (Exception ex)
@@ -158,10 +140,6 @@ internal class Client
             userInfo = await userService.ProcessUser(userInfo, cts.Token);
             Console.WriteLine("  ProcessUser");
             Console.WriteLine($"    -> Clienbt received: {userInfo.Name}, {userInfo.Age}");
-
-            //IAsyncEnumerable<UserInfo> list = await userService.GetList(cts.Token);
-            //Console.WriteLine($"  GetList<UserInfo>:");
-            //Console.WriteLine(string.Join(Environment.NewLine, list.Select((u) => $"    [{u.Name}]: {u.Age}")));
         }
 
         // IObserver<T> marshaling

@@ -1,5 +1,6 @@
 ﻿using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using StreamJsonRpc;
 using StreamJsonRpc.Aot.Common;
 
 namespace StreamJsonRpc.Aot.Client;
@@ -7,9 +8,33 @@ namespace StreamJsonRpc.Aot.Client;
 // Client-side implementation that receives callbacks from server
 public class NumberStreamListener : INumberStreamListener
 {
-    private readonly Subject<int> _subject = new Subject<int>();
+    private readonly Subject<int> _subject;
 
     public IObservable<int> Values => _subject;
+
+    private IServer _server;
+
+    IDisposable? numberSubscription = null;
+
+    public NumberStreamListener(IServer server)
+    {
+        _server = server;
+        _subject = new Subject<int>();
+
+        // Subscribe to filtered number stream
+        this.numberSubscription = this.CreateFilteredSubscription();
+    }
+
+    public Task Subscribe()
+    {
+        return _server.SubscribeToNumberStream();
+    }
+
+    public Task Unsubscribe()
+    {
+        this.numberSubscription?.Dispose();
+        return _server.UnsubscribeFromNumberStream();
+    }
 
     public Task OnNextValue(int value)
     {

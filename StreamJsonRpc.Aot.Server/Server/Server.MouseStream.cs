@@ -106,19 +106,6 @@ public partial class Server
         }
     }
 
-    // Simulate mouse events (call this method to publish mouse events)
-    public void PublishMouseEvent(int x, int y, MouseAction action)
-    {
-        var mouseEvent = new MouseEventData {
-            X = x,
-            Y = y,
-            Action = action,
-            Timestamp = DateTime.UtcNow
-        };
-
-        _mouseSubject.OnNext(mouseEvent);
-    }
-
     // Unsubscribe from mouse stream
     public Task UnsubscribeFromMouseStream()
     {

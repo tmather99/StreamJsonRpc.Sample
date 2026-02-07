@@ -29,7 +29,11 @@ public interface IServer
     Task SendTicksAsync(Guid guid);
     Task CancelTickOperation(Guid guid);
 
-    // mouse and number stream subscriptions
+    // mouse stream start/stop subscription
     Task SubscribeToNumberStream();
+    Task UnsubscribeFromNumberStream();
+
+    // number stream start/stop subscription
     Task SubscribeToMouseStream();
+    Task UnsubscribeFromMouseStream();
 }

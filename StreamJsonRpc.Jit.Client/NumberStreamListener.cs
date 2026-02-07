@@ -13,6 +13,30 @@ public class NumberStreamListener : INumberStreamListener
 
     public IObservable<int> Values => _subject;
 
+    private IServer _server;
+
+    IDisposable? numberSubscription = null;
+
+    public NumberStreamListener(IServer server)
+    {
+        _server = server;
+        _subject = new Subject<int>();
+
+        // Subscribe to filtered number stream
+        this.numberSubscription = this.CreateFilteredSubscription();
+    }
+
+    public Task Subscribe()
+    {
+        return _server.SubscribeToNumberStream();
+    }
+
+    public Task Unsubscribe()
+    {
+        this.numberSubscription?.Dispose();
+        return _server.UnsubscribeFromNumberStream();
+    }
+
     public Task OnNextValue(int value)
     {
         Console.ForegroundColor = ConsoleColor.DarkGray;

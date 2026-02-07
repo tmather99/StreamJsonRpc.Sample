@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using PolyType;
+﻿using PolyType;
 
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("StreamJsonRpc.Aot.Client")]
 
@@ -36,7 +35,11 @@ public partial interface IServer
     Task SendTicksAsync(Guid guid);
     Task CancelTickOperation(Guid guid);
 
-    // mouse and number stream subscriptions
+    // mouse stream start/stop subscription
     Task SubscribeToNumberStream();
+    Task UnsubscribeFromNumberStream();
+
+    // number stream start/stop subscription
     Task SubscribeToMouseStream();
+    Task UnsubscribeFromMouseStream();
 }

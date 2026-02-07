@@ -1,6 +1,6 @@
-﻿namespace StreamJsonRpc.Aot.Common.UserInfoStream;
+﻿namespace StreamJsonRpc.Jit.Client.Common.UserInfoStream;
 
-public partial class UserInfo
+public class UserInfo
 {
     public string Name { get; set; } = string.Empty;
 

@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Threading;
 using StreamJsonRpc;
+using StreamJsonRpc.Jit.Client.Common.UserInfoStream;
 
 namespace StreamJsonRpc.Jit.Client;
 
@@ -16,39 +17,25 @@ internal class Client
     {
         JsonRpc jsonRpc = null!;
 
-        // Subscription to filtered observable
-        IDisposable? numberSubscription = null;
-        IDisposable? mouseClickSubscription = null;
-        IDisposable? mouseMoveSubscription = null;
-
         try
         {
             // Create the MessagePack handler over the pipe
             jsonRpc = new(MessagePackHandler.Create(pipe));
 
-            // Handle push events from server.
-            jsonRpc.AddLocalRpcMethod("Tick", TickHandler());
-
-            // Handler for server push notifications.
-            Func<int, Task> TickHandler()
-            {
-                return async tickNumber =>
-                {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine($"    Tick {guid} - #{tickNumber}");
-                    Console.ResetColor();
-                };
-            }
+            RegisterTickHandler();
 
             // Register server RPC methods
             IServer server = jsonRpc.Attach<IServer>();
 
+            // Register user service RPC methods
+            IUserService userService = jsonRpc.Attach<IUserService>();
+
             // Register client callbacks so server can call back to us
-            NumberStreamListener numberStreamListener = new();
+            NumberStreamListener numberStreamListener = new(server);
             jsonRpc.AddLocalRpcTarget(numberStreamListener);
 
             // Register client callbacks for mouse stream
-            MouseStreamListener mouseStreamListener = new();
+            MouseStreamListener mouseStreamListener = new(server);
             jsonRpc.AddLocalRpcTarget(mouseStreamListener);
 
             IObserver<int> counterObserver = new CounterObserver();
@@ -69,35 +56,44 @@ internal class Client
                 // Test various data type marshaling
                 await Check_DataType_Marshaling(server);
 
+                // Test custom data type marshaling
+                await Check_Custom_DataType_Marshaling(userService);
+
                 // Start server hearbeat ticks
                 await jsonRpc.NotifyAsync("SendTicksAsync", guid);
                 Console.WriteLine($"  SendTicksAsync {guid}");
 
-                // Subscribe to filtered number stream
-                numberSubscription = numberStreamListener.CreateFilteredSubscription();
-
                 // Start subscription to server stream
-                await server.SubscribeToNumberStream();
-
-                // Subscribe to mouse events
-                mouseClickSubscription = mouseStreamListener.CreateClickSubscription();
-                mouseMoveSubscription = mouseStreamListener.CreateMovementSubscription();
+                await numberStreamListener.Subscribe();
 
                 // Register to mouse events
-                await server.SubscribeToMouseStream();
+                await mouseStreamListener.Subscribe();
 
                 // blocks until canceled via Ctrl+C.
                 await jsonRpc.Completion.WithCancellation(cts.Token);
+            }
+
+            void RegisterTickHandler()
+            {
+                // Handle push events from server.
+                jsonRpc.AddLocalRpcMethod("Tick", TickHandler());
+
+                // Handler for server push notifications.
+                Func<int, Task> TickHandler()
+                {
+                    return async tickNumber =>
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine($"    Tick {guid} - #{tickNumber}");
+                        Console.ResetColor();
+                    };
+                }
             }
         }
         catch (OperationCanceledException)
         {
             // stop hearbeat ticks
             await jsonRpc.InvokeAsync("CancelTickOperation", guid);
-
-            numberSubscription?.Dispose();
-            mouseClickSubscription?.Dispose();
-            mouseMoveSubscription?.Dispose();
             throw; // rethrow to main
         }
         catch (Exception ex)
@@ -134,6 +130,19 @@ internal class Client
 
             // IAsyncEnumerable<T> marshaling
             await Check_IAsyncEnumerable_Marshaling(server);
+        }
+
+        // Custom data type marshaling
+        async Task Check_Custom_DataType_Marshaling(IUserService userService)
+        {
+            UserInfo userInfo = new() {
+                Name = "Alice",
+                Age = 30
+            };
+
+            userInfo = await userService.ProcessUser(userInfo, cts.Token);
+            Console.WriteLine("  ProcessUser");
+            Console.WriteLine($"    -> Clienbt received: {userInfo.Name}, {userInfo.Age}");
         }
 
         // IObserver<T> marshaling

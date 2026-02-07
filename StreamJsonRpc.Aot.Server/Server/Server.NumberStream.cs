@@ -49,7 +49,7 @@ public partial class Server
                 if (isCancel) return;
 
                 Console.ForegroundColor = ConsoleColor.DarkGray;
-                Console.WriteLine($"      {value, 3} -> {clientGuid}");
+                Console.WriteLine($"      {value,3} -> {clientGuid}");
                 Console.ResetColor();
 
                 // Call back to client using notification
@@ -76,5 +76,14 @@ public partial class Server
             Console.WriteLine("Stream completed");
             await _numberStreamListener.OnCompleted();
         }
+    }
+
+    // Unsubscribe from mouse stream
+    public Task UnsubscribeFromNumberStream()
+    {
+        _numberSubscription?.Dispose();
+        _numberSubscription = null!;
+        Console.WriteLine("  Client unsubscribed from mouse stream");
+        return Task.CompletedTask;
     }
 }

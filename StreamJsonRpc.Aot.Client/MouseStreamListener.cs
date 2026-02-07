@@ -1,5 +1,6 @@
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using StreamJsonRpc;
 using StreamJsonRpc.Aot.Common;
 using StreamJsonRpc.Aot.Common.MouseStream;
 
@@ -8,9 +9,37 @@ namespace StreamJsonRpc.Aot.Client;
 // Client-side implementation that receives mouse callbacks from server
 public class MouseStreamListener : IMouseStreamListener
 {
-    private readonly Subject<MouseEventData> _subject = new Subject<MouseEventData>();
+    private readonly Subject<MouseEventData> _subject;
 
     public IObservable<MouseEventData> MouseEvents => _subject;
+
+    private IServer _server;
+
+    IDisposable? mouseClickSubscription = null;
+
+    IDisposable? mouseMoveSubscription = null;
+
+    public MouseStreamListener(IServer server)
+    {
+        _server = server;
+        _subject = new Subject<MouseEventData>();
+
+        // Subscribe to filtered mouse event stream
+        this.mouseClickSubscription = this.CreateClickSubscription();
+        this.mouseMoveSubscription = this.CreateMovementSubscription();
+    }
+
+    public Task Subscribe()
+    {
+        return _server.SubscribeToMouseStream();
+    }
+
+    public Task Unsubscribe()
+    {
+        this.mouseClickSubscription?.Dispose();
+        this.mouseMoveSubscription?.Dispose();
+        return _server.UnsubscribeFromMouseStream();
+    }
 
     public Task OnNextValue(MouseEventData e)
     {
