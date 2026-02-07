@@ -48,31 +48,10 @@ internal class Client
             // Start listening for messages
             jsonRpc.StartListening();
 
-            Console.WriteLine($"  ClientId: {guid}");
-            Program.isConnected = await server.ConnectAsync(guid);
+            // Run the main client logic
+            await RunAsync();
 
-            if (Program.isConnected)
-            {
-                // Test various data type marshaling
-                await Check_DataType_Marshaling(server);
-
-                // Test custom data type marshaling
-                await Check_Custom_DataType_Marshaling(userService);
-
-                // Start server hearbeat ticks
-                await jsonRpc.NotifyAsync("SendTicksAsync", guid);
-                Console.WriteLine($"  SendTicksAsync {guid}");
-
-                // Start subscription to server stream
-                await numberStreamListener.Subscribe();
-
-                // Register to mouse events
-                await mouseStreamListener.Subscribe();
-
-                // blocks until canceled via Ctrl+C.
-                await jsonRpc.Completion.WithCancellation(cts.Token);
-            }
-
+            // Handler for server push notifications.
             void RegisterTickHandler()
             {
                 // Handle push events from server.
@@ -87,6 +66,35 @@ internal class Client
                         Console.WriteLine($"    Tick {guid} - #{tickNumber}");
                         Console.ResetColor();
                     };
+                }
+            }
+
+            // Main client logic
+            async Task RunAsync()
+            {
+                Console.WriteLine($"  ClientId: {guid}");
+                Program.isConnected = await server.ConnectAsync(guid);
+
+                if (Program.isConnected)
+                {
+                    // Test various data type marshaling
+                    await Check_DataType_Marshaling(server);
+
+                    // Test custom data type marshaling
+                    await Check_Custom_DataType_Marshaling(userService);
+
+                    // Start server hearbeat ticks
+                    await jsonRpc.NotifyAsync("SendTicksAsync", guid);
+                    Console.WriteLine($"  SendTicksAsync {guid}");
+
+                    // Start subscription to server stream
+                    await numberStreamListener.Subscribe();
+
+                    // Register to mouse events
+                    await mouseStreamListener.Subscribe();
+
+                    // blocks until canceled via Ctrl+C.
+                    await jsonRpc.Completion.WithCancellation(cts.Token);
                 }
             }
         }
