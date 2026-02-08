@@ -6,14 +6,11 @@ namespace StreamJsonRpc.Jit.Client.Common;
 
 // Concrete interface for mouse events
 [JsonRpcContract, GenerateShape(IncludeMethods = MethodShapeFlags.PublicInstance)]
-public partial interface INumberDataStream
+public partial interface INumberDataStream : IDataStream
 {
-    //
-    // NOTE: Can not use interface inheritance for data stream contract.
-    //
-    //   Task Subscribe(Guid clientGuid);
-    //   Task Unsubscribe(Guid clientGuid);
+    [JsonRpcMethod("INumberDataStream.Subscribe")]
+    new Task Subscribe(Guid clientGuid);
 
-    Task SubscribeToNumberStream(Guid clientGuid);
-    Task UnsubscribeFromNumberStream(Guid clientGuid);
+    [JsonRpcMethod("INumberDataStream.Unsubscribe")]
+    new Task Unsubscribe(Guid clientGuid);
 }
