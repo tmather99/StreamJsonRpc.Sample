@@ -1,4 +1,5 @@
 ﻿using System.IO.Pipes;
+using StreamJsonRpc;
 using StreamJsonRpc.Aot.Server;
 using StreamJsonRpc.Aot.Server.Mouse;
 
@@ -10,6 +11,8 @@ internal class Program
     {
         string pipeName = "Satori";
         int clientRequests = 0;
+
+        JsonRpc jsonRpc = null!;
 
         try
         {
@@ -29,6 +32,7 @@ internal class Program
                 Console.WriteLine("\nShutting down mouse capture service...");
                 _mouseCaptureService?.Stop();
                 _mouseCaptureService?.Dispose();
+                jsonRpc?.Dispose();
                 e.Cancel = false;
             };
 
@@ -43,7 +47,7 @@ internal class Program
                     PipeOptions.Asynchronous);
 
                 await stream.WaitForConnectionAsync();
-                await Server.RunAsync(stream, ++clientRequests);
+                jsonRpc = await Server.RunAsync(stream, ++clientRequests);
             }
         }
         finally

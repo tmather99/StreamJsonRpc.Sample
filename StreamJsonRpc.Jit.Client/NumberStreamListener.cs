@@ -30,13 +30,13 @@ public class NumberStreamListener : INumberStreamListener
 
     public Task Subscribe()
     {
-        return _numberDataStream.Subscribe(Id);
+        return _numberDataStream.Subscribe(Program.guid);
     }
 
     public Task Unsubscribe()
     {
         this.numberSubscription?.Dispose();
-        return _numberDataStream.Unsubscribe(Id);
+        return _numberDataStream.Unsubscribe(Program.guid);
     }
 
     public Task OnNextValue(int value)

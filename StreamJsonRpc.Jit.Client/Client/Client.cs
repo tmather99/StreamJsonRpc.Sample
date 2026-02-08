@@ -72,10 +72,6 @@ internal partial class Client
             {
                 // stop hearbeat ticks
                 await jsonRpc.InvokeAsync("CancelTickOperation", guid);
-
-                // stop all stream listeners
-                await numberStreamListener.Unsubscribe();
-                await mouseStreamListener.Unsubscribe();
             }
             catch (Exception)
             {

@@ -32,14 +32,14 @@ public partial class MouseStreamListener : IMouseStreamListener
 
     public Task Subscribe()
     {
-        return _mouseDataStream.Subscribe(Id);
+        return _mouseDataStream.Subscribe(Program.guid);
     }
 
     public Task Unsubscribe()
     {
         this.mouseClickSubscription?.Dispose();
         this.mouseMoveSubscription?.Dispose();
-        return _mouseDataStream.Unsubscribe(Id);
+        return _mouseDataStream.Unsubscribe(Program.guid);
     }
 
     public Task OnNextValue(MouseEventData e)

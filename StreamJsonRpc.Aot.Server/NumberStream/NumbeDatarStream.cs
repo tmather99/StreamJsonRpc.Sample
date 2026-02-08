@@ -5,7 +5,7 @@ using StreamJsonRpc.Aot.Common;
 namespace StreamJsonRpc.Aot.Server;
 
 // Server implementation - Number Stream functionality
-public partial class NumberDataStream : INumberDataStream
+public partial class NumberDataStream : INumberDataStream, IDisposable
 {
     private INumberStreamListener _numberStreamListener = null!;
 
@@ -17,9 +17,9 @@ public partial class NumberDataStream : INumberDataStream
 
     private JsonRpc _jsonRpc;
 
-    public NumberDataStream(JsonRpc jsonRpc)
+    public NumberDataStream(Server server)
     {
-        _jsonRpc = jsonRpc;
+        _jsonRpc = server.jsonRpc;
     }
 
     public Task Subscribe(Guid clientGuid)
@@ -100,5 +100,11 @@ public partial class NumberDataStream : INumberDataStream
         _numberSubscription?.Dispose();
         _numberSubscription = null!;
         return Task.CompletedTask;
+    }
+
+    public void Dispose()
+    {
+        _numberSubscription?.Dispose();
+        _numberSubscription = null!;
     }
 }

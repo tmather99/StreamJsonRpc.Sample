@@ -2,7 +2,7 @@
 
 namespace StreamJsonRpc.Aot.Server;
 
-public partial class UserService : IUserService
+public partial class UserService : IUserService, IDisposable
 {
     // JSON-RPC connection to client
     private readonly JsonRpc _jsonRpc;
@@ -46,5 +46,10 @@ public partial class UserService : IUserService
         }
 
         return Task.FromResult<IAsyncEnumerable<UserInfo>>(GetUserInfos());
+    }
+
+    public void Dispose()
+    {
+        // Cleanup if needed
     }
 }

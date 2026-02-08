@@ -20,15 +20,15 @@ public partial class Server
     {
         Console.WriteLine($"  Client subscribed to counter observer stream oid: {oid}");
 
-        if (_jsonRpc == null)
+        if (jsonRpc == null)
         {
             throw new InvalidOperationException("Client RPC not set");
         }
 
         // register the stream listener callback interface
-        _jsonRpc.AllowModificationWhileListening = true;
-        _counterObserverStreamListener = _jsonRpc.Attach<ICounterObserver>();
-        _jsonRpc.AllowModificationWhileListening = false;
+        jsonRpc.AllowModificationWhileListening = true;
+        _counterObserverStreamListener = jsonRpc.Attach<ICounterObserver>();
+        jsonRpc.AllowModificationWhileListening = false;
 
         // Simulate publishing data periodically
         Observable.Interval(TimeSpan.FromMilliseconds(300))
@@ -48,7 +48,7 @@ public partial class Server
                 if (isCancel) return;
 
                 Console.ForegroundColor = ConsoleColor.DarkMagenta;
-                Console.WriteLine($"      {value, 3} -> {clientGuid}");
+                Console.WriteLine($"      {value,3} -> {clientGuid}");
                 Console.ResetColor();
 
                 // Call back to client using notification

@@ -18,7 +18,7 @@ public partial class Server : IServer
     {
         Console.WriteLine($"  SendTicksAsync isCancel={isCancel}");
 
-        if (_jsonRpc == null)
+        if (jsonRpc == null)
         {
             throw new InvalidOperationException("Client RPC not set");
         }
@@ -26,7 +26,7 @@ public partial class Server : IServer
         while (!isCancel)
         {
             // Send notification with tick number sequence per client
-            await _jsonRpc.NotifyAsync("Tick", ++tickNumber);
+            await jsonRpc.NotifyAsync("Tick", ++tickNumber);
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine($"    Notify clientId {guid} - #{tickNumber}");
             Console.ResetColor();
