@@ -4,7 +4,7 @@ namespace StreamJsonRpc.Aot.Common;
 
 // Concrete interface for mouse events
 [JsonRpcContract, GenerateShape(IncludeMethods = MethodShapeFlags.PublicInstance)]
-public partial interface INumberDataStream
+public partial interface INumberDataStream : IDataStream
 {
     //
     // NOTE: Can not use interface inheritance for data stream contract.

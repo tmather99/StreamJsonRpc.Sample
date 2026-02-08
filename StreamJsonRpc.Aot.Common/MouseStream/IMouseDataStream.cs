@@ -4,8 +4,6 @@ namespace StreamJsonRpc.Aot.Common;
 
 // Concrete interface for mouse events
 [JsonRpcContract, GenerateShape(IncludeMethods = MethodShapeFlags.PublicInstance)]
-public partial interface IMouseDataStream
+public partial interface IMouseDataStream : IDataStream
 {
-    Task Subscribe(Guid clientGuid);
-    Task Unsubscribe(Guid clientGuid);
 }
