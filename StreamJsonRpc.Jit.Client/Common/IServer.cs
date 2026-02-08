@@ -2,11 +2,14 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using PolyType;
 
 namespace StreamJsonRpc.Jit.Client;
 
 // Shared code between client and server
-public interface IServer
+[JsonRpcContract]
+[GenerateShape(IncludeMethods = MethodShapeFlags.PublicInstance)]
+public partial interface IServer
 {
     // data type marshaling operations
     Task<bool> ConnectAsync(Guid guid);
