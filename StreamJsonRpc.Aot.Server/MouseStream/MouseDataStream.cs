@@ -138,7 +138,7 @@ public partial class MouseDataStream : IMouseDataStream
     public Task Unsubscribe(Guid clientGuid)
     {
         Console.ForegroundColor = ConsoleColor.Red;
-        Console.WriteLine($"  Client unsubscribing from mouse data stream clientId = {clientGuid}");
+        Console.WriteLine($"  Unsubscribe client {clientGuid} from data stream.");
         Console.ResetColor();
 
         if (_mouseSubscriptions.TryGetValue(clientGuid, out IDisposable? subscription))
@@ -152,7 +152,6 @@ public partial class MouseDataStream : IMouseDataStream
             _mouseStreamListeners.Remove(clientGuid);
         }
 
-        Console.WriteLine($"  Client {clientGuid} unsubscribed from mouse data stream");
         return Task.CompletedTask;
     }
 }
