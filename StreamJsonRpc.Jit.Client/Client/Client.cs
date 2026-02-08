@@ -9,7 +9,7 @@ using StreamJsonRpc.Jit.Client.Common.UserInfoStream;
 
 namespace StreamJsonRpc.Jit.Client;
 
-internal partial class Client
+internal partial class Client : IClient
 {
     public static async Task RunAsync(NamedPipeClientStream pipe, Guid guid, CancellationTokenSource cts)
     {

@@ -3,7 +3,7 @@
 
 ╔══════════════════════════════ APPLICATION LAYER ═════════════════════════════╗
 
-        SERVER (Data Producer)                     CLIENT (Listener)
+        IServer (Data Producer)                     IClient (Listener)
 
    ┌───────────────────────────────┐         ┌──────────────────────────────┐
    │        IDataStream<T>         │────────▶│      IStreamListener<T>      │
