@@ -75,6 +75,7 @@ public partial class MouseStreamListener : IMouseStreamListener
                 {
                     Console.ForegroundColor = ConsoleColor.Yellow;
                     Console.WriteLine($"           -> Click detected: {e.Action} (X,Y) = ({e.X}, {e.Y})");
+                    Console.WriteLine($"                    ClientId: {Program.guid}");
                     Console.WriteLine($"                          Id: {this.Id}");
                     Console.WriteLine($"                   TimeStamp: {e.Timestamp}");
                     Console.WriteLine($"                      Values:\n" +
