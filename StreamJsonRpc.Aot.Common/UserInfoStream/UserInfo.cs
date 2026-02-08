@@ -1,4 +1,4 @@
-﻿namespace StreamJsonRpc.Aot.Common.UserInfoStream;
+﻿namespace StreamJsonRpc.Aot.Common;
 
 public partial class UserInfo
 {

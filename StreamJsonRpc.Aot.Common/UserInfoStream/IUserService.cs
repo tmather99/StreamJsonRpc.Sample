@@ -1,6 +1,6 @@
 ﻿using PolyType;
 
-namespace StreamJsonRpc.Aot.Common.UserInfoStream;
+namespace StreamJsonRpc.Aot.Common;
 
 [JsonRpcContract, GenerateShape(IncludeMethods = MethodShapeFlags.PublicInstance)]
 public partial interface IUserService

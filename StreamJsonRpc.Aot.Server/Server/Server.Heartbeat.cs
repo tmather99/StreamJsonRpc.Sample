@@ -32,9 +32,5 @@ public partial class Server : IServer
             Console.ResetColor();
             await Task.Delay(1000);
         }
-
-        _numberStreamSubject.Dispose();
-        _numberSubscription?.Dispose();
-        _numberSubscription = null!;
     }
 }

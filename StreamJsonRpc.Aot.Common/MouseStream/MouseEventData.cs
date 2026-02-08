@@ -1,4 +1,4 @@
-namespace StreamJsonRpc.Aot.Common.MouseStream;
+namespace StreamJsonRpc.Aot.Common;
 
 public class MouseEventData
 {

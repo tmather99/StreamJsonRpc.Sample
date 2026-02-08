@@ -15,6 +15,7 @@ internal partial class Client
     {
         JsonRpc jsonRpc = null!;
 
+        NumberStreamListener numberStreamListener = null!;
         MouseStreamListener mouseStreamListener = null!;
 
         try
@@ -55,7 +56,7 @@ internal partial class Client
                     Console.WriteLine($"  SendTicksAsync {guid}");
 
                     // Start subscription to server stream
-                    await SubscribeToNumberDataStream(jsonRpc, server);
+                    numberStreamListener = await SubscribeToNumberDataStream(jsonRpc);
 
                     // Start subscription to server stream with client callback handlers
                     mouseStreamListener = await SubcribeToMouseDataStream(jsonRpc);
@@ -67,10 +68,19 @@ internal partial class Client
         }
         catch (OperationCanceledException)
         {
-            // stop hearbeat ticks
-            await jsonRpc.InvokeAsync("CancelTickOperation", guid);
+            try
+            {
+                // stop hearbeat ticks
+                await jsonRpc.InvokeAsync("CancelTickOperation", guid);
 
-            await mouseStreamListener.Unsubscribe();
+                // stop all stream listeners
+                await numberStreamListener.Unsubscribe();
+                await mouseStreamListener.Unsubscribe();
+            }
+            catch (Exception)
+            {
+                return;  // exit cleanly
+            }
 
             throw; // rethrow to main
         }

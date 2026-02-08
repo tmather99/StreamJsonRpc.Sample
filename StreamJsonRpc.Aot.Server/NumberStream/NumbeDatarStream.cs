@@ -5,7 +5,7 @@ using StreamJsonRpc.Aot.Common;
 namespace StreamJsonRpc.Aot.Server;
 
 // Server implementation - Number Stream functionality
-public partial class Server
+public partial class NumberDataStream : INumberDataStream
 {
     private INumberStreamListener _numberStreamListener = null!;
 
@@ -15,8 +15,25 @@ public partial class Server
     // for cleanup when RPC request is canceled
     private IDisposable _numberSubscription = null!;
 
+    private JsonRpc _jsonRpc;
+
+    public NumberDataStream(JsonRpc jsonRpc)
+    {
+        _jsonRpc = jsonRpc;
+    }
+
+    public Task Subscribe(Guid clientGuid)
+    {
+        return SubscribeToNumberStream(clientGuid);
+    }
+
+    public Task Unsubscribe(Guid clientGuid)
+    {
+        return UnsubscribeFromNumberStream(clientGuid);
+    }
+
     // Server streams data to client using notifications
-    public async Task SubscribeToNumberStream()
+    public Task SubscribeToNumberStream(Guid clientGuid)
     {
         Console.WriteLine("  Client subscribed to number stream");
 
@@ -34,7 +51,6 @@ public partial class Server
         Observable.Interval(TimeSpan.FromMilliseconds(100))
             .Subscribe(i =>
             {
-                if (isCancel) return;
                 int r = Random.Shared.Next(1, 100);
                 _numberStreamSubject.OnNext(r);
             });
@@ -46,8 +62,6 @@ public partial class Server
         {
             try
             {
-                if (isCancel) return;
-
                 Console.ForegroundColor = ConsoleColor.DarkGray;
                 Console.WriteLine($"      {value,3} -> {clientGuid}");
                 Console.ResetColor();
@@ -63,27 +77,28 @@ public partial class Server
 
         async void OnError(Exception error)
         {
-            if (isCancel) return;
-
             Console.WriteLine($"Stream error: {error.Message}");
             await _numberStreamListener.OnError(error.Message);
         }
 
         async void OnCompleted()
         {
-            if (isCancel) return;
-
             Console.WriteLine("Stream completed");
             await _numberStreamListener.OnCompleted();
         }
+
+        return Task.CompletedTask;
     }
 
     // Unsubscribe from mouse stream
-    public Task UnsubscribeFromNumberStream()
+    public Task UnsubscribeFromNumberStream(Guid clientGuid)
     {
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.WriteLine($"  Unsubscribe client {clientGuid} from mouse stream.");
+        Console.ResetColor();
+
         _numberSubscription?.Dispose();
         _numberSubscription = null!;
-        Console.WriteLine("  Client unsubscribed from mouse stream");
         return Task.CompletedTask;
     }
 }

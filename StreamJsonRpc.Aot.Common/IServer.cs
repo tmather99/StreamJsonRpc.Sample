@@ -34,8 +34,4 @@ public partial interface IServer
     // heatbeat start/stop operations
     Task SendTicksAsync(Guid guid);
     Task CancelTickOperation(Guid guid);
-
-    // mouse stream start/stop subscription
-    Task SubscribeToNumberStream();
-    Task UnsubscribeFromNumberStream();
 }

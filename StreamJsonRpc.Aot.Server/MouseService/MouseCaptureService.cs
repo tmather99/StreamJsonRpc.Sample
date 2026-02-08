@@ -1,5 +1,5 @@
 using SharpHook;
-using StreamJsonRpc.Aot.Common.MouseStream;
+using StreamJsonRpc.Aot.Common;
 
 namespace StreamJsonRpc.Aot.Server.Mouse;
 

@@ -8,15 +8,18 @@ namespace StreamJsonRpc.Jit.Client;
 internal partial class Client
 {
     // Register client callbacks using IStreamListener<T> marshaling
-    private static async Task SubscribeToNumberDataStream(JsonRpc jsonRpc, IServer server)
+    private static async Task<NumberStreamListener> SubscribeToNumberDataStream(JsonRpc jsonRpc)
     {
         jsonRpc.AllowModificationWhileListening = true;
-        // Register client callbacks so server can call back to us
-        NumberStreamListener numberStreamListener = new(server);
+        INumberDataStream numberDataStream = jsonRpc.Attach<INumberDataStream>();
+        NumberStreamListener numberStreamListener = new(numberDataStream);
         jsonRpc.AddLocalRpcTarget(numberStreamListener);
         jsonRpc.AllowModificationWhileListening = false;
 
         await numberStreamListener.Subscribe();
+        Console.WriteLine($"  NumberStreamListener.Subscribe({numberStreamListener.Id})");
+
+        return numberStreamListener;
     }
 
     // Register mouse data stream listener and subscribe to mouse events
@@ -24,7 +27,6 @@ internal partial class Client
     {
         jsonRpc.AllowModificationWhileListening = true;
         IMouseDataStream mouseDataStream = jsonRpc.Attach<IMouseDataStream>();
-        // Register client callbacks for mouse stream
         MouseStreamListener mouseStreamListener = new(mouseDataStream);
         jsonRpc.AddLocalRpcTarget(mouseStreamListener);
         jsonRpc.AllowModificationWhileListening = false;

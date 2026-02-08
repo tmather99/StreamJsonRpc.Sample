@@ -1,8 +1,6 @@
 ﻿using System.IO.Pipes;
-using StreamJsonRpc;
 using StreamJsonRpc.Aot.Server;
 using StreamJsonRpc.Aot.Server.Mouse;
-using StreamJsonRpc.Aot.Server.MouseStream;
 
 internal class Program
 {

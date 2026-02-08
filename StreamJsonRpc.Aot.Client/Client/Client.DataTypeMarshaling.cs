@@ -1,6 +1,5 @@
 using System.Reactive.Linq;
 using StreamJsonRpc.Aot.Common;
-using StreamJsonRpc.Aot.Common.UserInfoStream;
 
 namespace StreamJsonRpc.Aot.Client;
 

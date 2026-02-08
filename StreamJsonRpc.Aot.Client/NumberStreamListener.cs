@@ -8,17 +8,19 @@ namespace StreamJsonRpc.Aot.Client;
 // Client-side implementation that receives callbacks from server
 public class NumberStreamListener : INumberStreamListener
 {
+    public readonly Guid Id = Guid.NewGuid();
+
     private readonly Subject<int> _subject;
 
     public IObservable<int> Values => _subject;
 
-    private IServer _server;
+    private INumberDataStream _numberDataStream;
 
-    IDisposable? numberSubscription = null;
+    private readonly IDisposable? numberSubscription = null;
 
-    public NumberStreamListener(IServer server)
+    public NumberStreamListener(INumberDataStream numberDataStream)
     {
-        _server = server;
+        _numberDataStream = numberDataStream;
         _subject = new Subject<int>();
 
         // Subscribe to filtered number stream
@@ -27,13 +29,13 @@ public class NumberStreamListener : INumberStreamListener
 
     public Task Subscribe()
     {
-        return _server.SubscribeToNumberStream();
+        return _numberDataStream.SubscribeToNumberStream(Id);
     }
 
     public Task Unsubscribe()
     {
         this.numberSubscription?.Dispose();
-        return _server.UnsubscribeFromNumberStream();
+        return _numberDataStream.UnsubscribeFromNumberStream(Id);
     }
 
     public Task OnNextValue(int value)

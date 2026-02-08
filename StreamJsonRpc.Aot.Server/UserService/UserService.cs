@@ -1,4 +1,4 @@
-﻿using StreamJsonRpc.Aot.Common.UserInfoStream;
+﻿using StreamJsonRpc.Aot.Common;
 
 namespace StreamJsonRpc.Aot.Server;
 

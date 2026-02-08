@@ -6,15 +6,19 @@ namespace StreamJsonRpc.Aot.Client;
 internal partial class Client
 {
     // Register client callbacks using IStreamListener<T> marshaling
-    private static async Task SubscribeToNumberDataStream(JsonRpc jsonRpc, IServer server)
+    private static async Task<NumberStreamListener> SubscribeToNumberDataStream(JsonRpc jsonRpc)
     {
         jsonRpc.AllowModificationWhileListening = true;
+        INumberDataStream numberDataStream = jsonRpc.Attach<INumberDataStream>();
         RpcTargetMetadata targetMetadata = RpcTargetMetadata.FromShape<INumberStreamListener>();
-        NumberStreamListener numberStreamListener = new(server);
+        NumberStreamListener numberStreamListener = new(numberDataStream);
         jsonRpc.AddLocalRpcTarget(targetMetadata, numberStreamListener, null);
         jsonRpc.AllowModificationWhileListening = false;
 
         await numberStreamListener.Subscribe();
+        Console.WriteLine($"  NumberStreamListener.Subscribe({numberStreamListener.Id})");
+
+        return numberStreamListener;
     }
 
     // Register mouse data stream listener and subscribe to mouse events
@@ -22,9 +26,9 @@ internal partial class Client
     {
         jsonRpc.AllowModificationWhileListening = true;
         IMouseDataStream mouseDataStream = jsonRpc.Attach<IMouseDataStream>();
-        RpcTargetMetadata mouseTargetMetadata = RpcTargetMetadata.FromShape<IMouseStreamListener>();
+        RpcTargetMetadata targetMetadata = RpcTargetMetadata.FromShape<IMouseStreamListener>();
         MouseStreamListener mouseStreamListener = new(mouseDataStream);
-        jsonRpc.AddLocalRpcTarget(mouseTargetMetadata, mouseStreamListener, null);
+        jsonRpc.AddLocalRpcTarget(targetMetadata, mouseStreamListener, null);
         jsonRpc.AllowModificationWhileListening = false;
 
         await mouseStreamListener.Subscribe();
@@ -37,9 +41,9 @@ internal partial class Client
     private static async Task SubscribeToCounterObserver(JsonRpc jsonRpc)
     {
         jsonRpc.AllowModificationWhileListening = true;
-        RpcTargetMetadata counterObserverTargetMetadata = RpcTargetMetadata.FromShape<ICounterObserver>();
+        RpcTargetMetadata targetMetadata = RpcTargetMetadata.FromShape<ICounterObserver>();
         ICounterObserver counterObserver = new CounterObserver();
-        jsonRpc.AddLocalRpcTarget(counterObserverTargetMetadata, counterObserver, null);
+        jsonRpc.AddLocalRpcTarget(targetMetadata, counterObserver, null);
         jsonRpc.AllowModificationWhileListening = false;
     }
 

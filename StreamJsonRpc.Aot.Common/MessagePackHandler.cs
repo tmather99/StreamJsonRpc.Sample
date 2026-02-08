@@ -1,8 +1,6 @@
 ﻿using System.IO.Pipes;
 using Microsoft;
 using PolyType;
-using StreamJsonRpc.Aot.Common.MouseStream;
-using StreamJsonRpc.Aot.Common.UserInfoStream;
 
 namespace StreamJsonRpc.Aot.Common;
 

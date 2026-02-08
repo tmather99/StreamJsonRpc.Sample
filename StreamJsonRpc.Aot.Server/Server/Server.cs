@@ -1,7 +1,5 @@
 ﻿using System.IO.Pipes;
 using StreamJsonRpc.Aot.Common;
-using StreamJsonRpc.Aot.Common.UserInfoStream;
-using StreamJsonRpc.Aot.Server.MouseStream;
 
 namespace StreamJsonRpc.Aot.Server;
 
@@ -72,14 +70,19 @@ public partial class Server : IServer
         IServer server = new Server(jsonRpc);
         jsonRpc.AddLocalRpcTarget(targetMetadata, server, null);
 
+        // Register IUserService
+        targetMetadata = RpcTargetMetadata.FromShape<IUserService>();
+        IUserService userService = new UserService(jsonRpc);
+        jsonRpc.AddLocalRpcTarget(targetMetadata, userService, null);
+
         // Register IMouseDataStream
         targetMetadata = RpcTargetMetadata.FromShape<IMouseDataStream>();
         IMouseDataStream mouseDataStream = new MouseDataStream(jsonRpc);
         jsonRpc.AddLocalRpcTarget(targetMetadata, mouseDataStream, null);
 
-        // Register IUserService
-        targetMetadata = RpcTargetMetadata.FromShape<IUserService>();
-        IUserService userService = new UserService(jsonRpc);
-        jsonRpc.AddLocalRpcTarget(targetMetadata, userService, null);
+        // Register INumberDataStream
+        targetMetadata = RpcTargetMetadata.FromShape<INumberDataStream>();
+        INumberDataStream numberDataStream = new NumberDataStream(jsonRpc);
+        jsonRpc.AddLocalRpcTarget(targetMetadata, numberDataStream, null);
     }
 }

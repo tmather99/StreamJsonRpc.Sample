@@ -1,5 +1,4 @@
 using PolyType;
-using StreamJsonRpc.Aot.Common.MouseStream;
 
 namespace StreamJsonRpc.Aot.Common;
 

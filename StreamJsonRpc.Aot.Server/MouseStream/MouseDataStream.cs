@@ -1,8 +1,7 @@
 ﻿using System.Reactive.Subjects;
 using StreamJsonRpc.Aot.Common;
-using StreamJsonRpc.Aot.Common.MouseStream;
 
-namespace StreamJsonRpc.Aot.Server.MouseStream;
+namespace StreamJsonRpc.Aot.Server;
 
 public partial class MouseDataStream : IMouseDataStream
 {
