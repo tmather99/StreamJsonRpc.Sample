@@ -16,7 +16,7 @@ internal class Program
             // Start global mouse capture at application startup
             if (OperatingSystem.IsWindows())
             {
-                StartMouseCaptureService();
+                _mouseCaptureService = await MouseCaptureService.StartMouseCaptureService();
             }
             else
             {
@@ -52,25 +52,6 @@ internal class Program
             Console.WriteLine("\nApplication shutting down...");
             _mouseCaptureService?.Stop();
             _mouseCaptureService?.Dispose();
-        }
-
-        // Start the mouse capture service
-        static void StartMouseCaptureService()
-        {
-            _mouseCaptureService = new MouseCaptureService(MouseDataStream.PublishMouseEventGlobal);
-
-            _ = Task.Run(async () =>
-            {
-                try
-                {
-                    Console.WriteLine("MouseDataStream is connected to global mouse service.");
-                    await _mouseCaptureService.StartAsync();
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Failed to start mouse capture: {ex.Message}");
-                }
-            });
         }
     }
 }

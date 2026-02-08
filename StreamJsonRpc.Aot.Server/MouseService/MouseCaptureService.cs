@@ -16,6 +16,28 @@ public class MouseCaptureService : IDisposable
         _onMouseEvent = onMouseEvent;
     }
 
+
+    // Start the mouse capture service
+    public static async Task<MouseCaptureService> StartMouseCaptureService()
+    {
+        var mouseCaptureService = new MouseCaptureService(MouseDataStream.PublishMouseEventGlobal);
+
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                Console.WriteLine("MouseDataStream is connected to global mouse service.");
+                await mouseCaptureService.StartAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to start mouse capture: {ex.Message}");
+            }
+        });
+
+        return mouseCaptureService;
+    }
+
     public async Task StartAsync()
     {
         if (_isRunning)
