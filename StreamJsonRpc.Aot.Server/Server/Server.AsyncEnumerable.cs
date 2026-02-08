@@ -1,6 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using StreamJsonRpc.Aot.Common;
-using static StreamJsonRpc.Aot.Server.Server;
+﻿using StreamJsonRpc.Aot.Common;
 
 namespace StreamJsonRpc.Aot.Server;
 
@@ -47,7 +45,7 @@ public partial class Server : IServer
     public Task<IAsyncEnumerable<int>> ProcessAsyncEnumerable(IObserver<int> progress, CancellationToken ct)
     {
         Console.WriteLine("  ProcessAsyncEnumerable.");
-        
+
         return Task.FromResult(Generate());
 
         async IAsyncEnumerable<int> Generate(CancellationToken token = default)
@@ -103,5 +101,10 @@ public partial class Server : IServer
         }
 
         Console.WriteLine("SERVER: outgoing stream finished");
+    }
+
+    public Task SetNumberStreamListener(INumberStreamListener listner, CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
     }
 }

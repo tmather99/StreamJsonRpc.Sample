@@ -3,6 +3,7 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
+using StreamJsonRpc.Jit.Client.Common;
 using StreamJsonRpc.Jit.Client.Common.MouseStream;
 
 namespace StreamJsonRpc.Jit.Client;
@@ -10,19 +11,21 @@ namespace StreamJsonRpc.Jit.Client;
 // Client-side implementation that receives mouse callbacks from server
 public class MouseStreamListener : IMouseStreamListener
 {
+    public readonly Guid Id = Guid.NewGuid();
+
     private readonly Subject<MouseEventData> _subject;
 
     public IObservable<MouseEventData> MouseEvents => _subject;
 
-    private IServer _server;
+    private IMouseDataStream _mouseDataStream;
 
     IDisposable? mouseClickSubscription = null;
 
     IDisposable? mouseMoveSubscription = null;
 
-    public MouseStreamListener(IServer server)
+    public MouseStreamListener(IMouseDataStream mouseDataStream)
     {
-        _server = server;
+        _mouseDataStream = mouseDataStream;
         _subject = new Subject<MouseEventData>();
 
         // Subscribe to filtered mouse event stream
@@ -32,20 +35,20 @@ public class MouseStreamListener : IMouseStreamListener
 
     public Task Subscribe()
     {
-        return _server.SubscribeToMouseStream();
+        return _mouseDataStream.Subscribe(Id);
     }
 
     public Task Unsubscribe()
     {
         this.mouseClickSubscription?.Dispose();
         this.mouseMoveSubscription?.Dispose();
-        return _server.UnsubscribeFromMouseStream();
+        return _mouseDataStream.Unsubscribe(Id);
     }
 
     public Task OnNextValue(MouseEventData e)
     {
         Console.ForegroundColor = ConsoleColor.DarkGray;
-        Console.WriteLine($"        MouseStreamListener - OnNextValue: {e.Action} (X,Y) = ({e.X}, {e.Y})");
+        Console.WriteLine($"        MouseStreamListener - OnNextValue: {e.Action} (X,Y) = ({e.X}, {e.Y}");
         Console.ResetColor();
         _subject.OnNext(e);
         return Task.CompletedTask;
@@ -75,6 +78,7 @@ public class MouseStreamListener : IMouseStreamListener
                 {
                     Console.ForegroundColor = ConsoleColor.Yellow;
                     Console.WriteLine($"           -> Click detected: {e.Action} (X,Y) = ({e.X}, {e.Y})");
+                    Console.WriteLine($"                          Id: {this.Id}");
                     Console.WriteLine($"                   TimeStamp: {e.Timestamp}");
                     Console.WriteLine($"                      Values:\n" +
                                       $"                        [{string.Join(", ", e.ValuedList)}]");

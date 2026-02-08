@@ -55,4 +55,12 @@ public partial class Server : IServer
         ct.ThrowIfCancellationRequested();
         return Task.FromResult(observers.First());
     }
+
+    //
+    // NOTE: Failed to deserialize custom types as JSON-RPC argument
+    //
+    public Task SetCounterObserver(ICounterObserver observer, CancellationToken ct)
+    {
+        throw new NotImplementedException();
+    }
 }

@@ -7,21 +7,23 @@ using StreamJsonRpc.Aot.Common.MouseStream;
 namespace StreamJsonRpc.Aot.Client;
 
 // Client-side implementation that receives mouse callbacks from server
-public class MouseStreamListener : IMouseStreamListener
+public partial class MouseStreamListener : IMouseStreamListener
 {
+    public readonly Guid Id = Guid.NewGuid();
+
     private readonly Subject<MouseEventData> _subject;
 
     public IObservable<MouseEventData> MouseEvents => _subject;
 
-    private IServer _server;
+    private IMouseDataStream _mouseDataStream;
 
     IDisposable? mouseClickSubscription = null;
 
     IDisposable? mouseMoveSubscription = null;
 
-    public MouseStreamListener(IServer server)
+    public MouseStreamListener(IMouseDataStream mouseDataStream)
     {
-        _server = server;
+        _mouseDataStream = mouseDataStream;
         _subject = new Subject<MouseEventData>();
 
         // Subscribe to filtered mouse event stream
@@ -31,14 +33,14 @@ public class MouseStreamListener : IMouseStreamListener
 
     public Task Subscribe()
     {
-        return _server.SubscribeToMouseStream();
+        return _mouseDataStream.Subscribe(Id);
     }
 
     public Task Unsubscribe()
     {
         this.mouseClickSubscription?.Dispose();
         this.mouseMoveSubscription?.Dispose();
-        return _server.UnsubscribeFromMouseStream();
+        return _mouseDataStream.Unsubscribe(Id);
     }
 
     public Task OnNextValue(MouseEventData e)
@@ -74,6 +76,7 @@ public class MouseStreamListener : IMouseStreamListener
                 {
                     Console.ForegroundColor = ConsoleColor.Yellow;
                     Console.WriteLine($"           -> Click detected: {e.Action} (X,Y) = ({e.X}, {e.Y})");
+                    Console.WriteLine($"                          Id: {this.Id}");
                     Console.WriteLine($"                   TimeStamp: {e.Timestamp}");
                     Console.WriteLine($"                      Values:\n" +
                                       $"                        [{string.Join(", ", e.ValuedList)}]");

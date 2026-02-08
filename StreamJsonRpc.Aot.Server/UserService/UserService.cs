@@ -1,6 +1,6 @@
 ﻿using StreamJsonRpc.Aot.Common.UserInfoStream;
 
-namespace StreamJsonRpc.Aot.Server.UserService;
+namespace StreamJsonRpc.Aot.Server;
 
 public partial class UserService : IUserService
 {

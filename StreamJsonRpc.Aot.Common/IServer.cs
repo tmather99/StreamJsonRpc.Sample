@@ -38,8 +38,4 @@ public partial interface IServer
     // mouse stream start/stop subscription
     Task SubscribeToNumberStream();
     Task UnsubscribeFromNumberStream();
-
-    // number stream start/stop subscription
-    Task SubscribeToMouseStream();
-    Task UnsubscribeFromMouseStream();
 }

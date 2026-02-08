@@ -1,7 +1,7 @@
-﻿using System.Reactive.Linq;
-using System.Reactive.Subjects;
-using System.Runtime.CompilerServices;
+﻿using System.IO.Pipes;
 using StreamJsonRpc.Aot.Common;
+using StreamJsonRpc.Aot.Common.UserInfoStream;
+using StreamJsonRpc.Aot.Server.MouseStream;
 
 namespace StreamJsonRpc.Aot.Server;
 
@@ -9,10 +9,10 @@ namespace StreamJsonRpc.Aot.Server;
 public partial class Server : IServer
 {
     // unique client identifier per connection
-    private Guid clientGuid; 
+    private Guid clientGuid;
 
     // ctlr+c cancel state
-    private bool isCancel;
+    public bool isCancel;
 
     // heatbeat tick number
     private int tickNumber = 0;
@@ -24,6 +24,32 @@ public partial class Server : IServer
     public Server(JsonRpc jsonRpc)
     {
         _jsonRpc = jsonRpc;
+    }
+
+    // Handle each client connection
+    public static async Task RunAsync(NamedPipeServerStream pipe, int requestId)
+    {
+        await Console.Error.WriteLineAsync($"  Connection request #{requestId} received.");
+
+        // Set up JSON-RPC over the named pipe
+        JsonRpc jsonRpc = new(MessagePackHandler.Create(pipe)) {
+            CancelLocallyInvokedMethodsWhenConnectionIsClosed = true
+        };
+
+        jsonRpc.Disconnected += static async delegate (object? o, JsonRpcDisconnectedEventArgs e) {
+            Console.WriteLine("\nRPC connection closed");
+            Console.WriteLine($"  Reason: {e.Reason}");
+            Console.WriteLine($"  Description: {e.Description}");
+            if (e.Exception != null)
+                Console.WriteLine($"  Exception: {e.Exception}");
+        };
+
+        RegisterTypes(jsonRpc);
+
+        jsonRpc.StartListening();
+
+        //await jsonRpc.Completion;
+        await Console.Error.WriteLineAsync($"  Request #{requestId} terminated.");
     }
 
     // Client connects and registers its Guid
@@ -38,16 +64,22 @@ public partial class Server : IServer
         return true;
     }
 
-    //
-    // NOTE: Failed to deserialize custom types as JSON-RPC argument
-    //
-    public Task SetCounterObserver(ICounterObserver observer, CancellationToken ct)
+    // Do not use reflection. Everything must be known at compile time.
+    static void RegisterTypes(JsonRpc jsonRpc)
     {
-        throw new NotImplementedException();
-    }
+        // Register IServer
+        RpcTargetMetadata targetMetadata = RpcTargetMetadata.FromShape<IServer>();
+        IServer server = new Server(jsonRpc);
+        jsonRpc.AddLocalRpcTarget(targetMetadata, server, null);
 
-    public Task SetNumberStreamListener(INumberStreamListener listner, CancellationToken cancellationToken)
-    {
-        throw new NotImplementedException();
+        // Register IMouseDataStream
+        targetMetadata = RpcTargetMetadata.FromShape<IMouseDataStream>();
+        IMouseDataStream mouseDataStream = new MouseDataStream(jsonRpc);
+        jsonRpc.AddLocalRpcTarget(targetMetadata, mouseDataStream, null);
+
+        // Register IUserService
+        targetMetadata = RpcTargetMetadata.FromShape<IUserService>();
+        IUserService userService = new UserService(jsonRpc);
+        jsonRpc.AddLocalRpcTarget(targetMetadata, userService, null);
     }
 }

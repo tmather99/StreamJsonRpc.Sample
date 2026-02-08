@@ -1,23 +1,32 @@
-using System.Reactive.Subjects;
+﻿using System.Reactive.Subjects;
 using StreamJsonRpc.Aot.Common;
 using StreamJsonRpc.Aot.Common.MouseStream;
 
-namespace StreamJsonRpc.Aot.Server;
+namespace StreamJsonRpc.Aot.Server.MouseStream;
 
-// Server implementation - Mouse Stream functionality
-public partial class Server
+public partial class MouseDataStream : IMouseDataStream
 {
-    private IMouseStreamListener _mouseStreamListener = null!;
+    private Guid Id;
 
     // Static subject to aggregate mouse events from global capture service
     private static readonly Subject<MouseEventData> _globalMouseSubject = new();
 
-    private IDisposable _mouseSubscription = null!;
+    // Change to Dictionary to support multiple subscriptions
+    private static readonly IDictionary<Guid, IDisposable> _mouseSubscriptions = new Dictionary<Guid, IDisposable>();
     private readonly Subject<MouseEventData> _mouseSubject = new();
+
+    private JsonRpc _jsonRpc;
+
+    private static readonly IDictionary<Guid, IMouseStreamListener> _mouseStreamListeners = new Dictionary<Guid, IMouseStreamListener>();
 
     // Static method called by the global mouse capture service
     public static void PublishMouseEventGlobal(int x, int y, MouseAction action)
     {
+        if (!_mouseStreamListeners.Any())
+        {
+            return;
+        }
+
         var mouseEvent = new MouseEventData {
             X = x,
             Y = y,
@@ -28,29 +37,50 @@ public partial class Server
         _globalMouseSubject.OnNext(mouseEvent);
     }
 
-    // Server streams mouse data to client using notifications
-    public async Task SubscribeToMouseStream()
+    public MouseDataStream(JsonRpc jsonRpc)
     {
-        Console.WriteLine("  Client subscribed to mouse stream");
+        _jsonRpc = jsonRpc;
+
+        jsonRpc.Disconnected += static async delegate (object? o, JsonRpcDisconnectedEventArgs e) {
+            Console.WriteLine("\nMouseEventData - RPC connection closed");
+            Console.WriteLine($"  Reason: {e.Reason}");
+            Console.WriteLine($"  Description: {e.Description}");
+            if (e.Exception != null)
+                Console.WriteLine($"  Exception: {e.Exception}");
+        };
+    }
+
+    public Task Subscribe(Guid clientGuid)
+    {
+        this.Id = clientGuid;
+
+        Console.WriteLine($"  Client subscribed to mouse data stream {clientGuid}");
 
         if (_jsonRpc == null)
         {
             throw new InvalidOperationException("Client RPC not set");
         }
 
+        // Check if already subscribed
+        if (_mouseSubscriptions.ContainsKey(clientGuid))
+        {
+            Console.WriteLine($"  Client {clientGuid} already subscribed, disposing old subscription");
+            _mouseSubscriptions[clientGuid].Dispose();
+        }
+
         _jsonRpc.AllowModificationWhileListening = true;
-        _mouseStreamListener = _jsonRpc.Attach<IMouseStreamListener>();
+        IMouseStreamListener mouseStreamListener = _jsonRpc.Attach<IMouseStreamListener>();
         _jsonRpc.AllowModificationWhileListening = false;
 
-        // Subscribe to the global mouse subject
-        _mouseSubscription = _globalMouseSubject.Subscribe(OnNext, OnError, OnCompleted);
+        _mouseStreamListeners[clientGuid] = mouseStreamListener;
+
+        // Subscribe to the global mouse subject - store per clientGuid
+        _mouseSubscriptions[clientGuid] = _globalMouseSubject.Subscribe(OnNext, OnError, OnCompleted);
 
         async void OnNext(MouseEventData e)
         {
             try
             {
-                if (isCancel) return;
-
                 if (e.Action == MouseAction.LeftClick)
                 {
                     e.ValuedList = [
@@ -65,6 +95,7 @@ public partial class Server
 
                     Console.ForegroundColor = ConsoleColor.Yellow;
                     Console.WriteLine($"          -> Click detected: {e.Action} (X,Y) = ({e.X}, {e.Y})");
+                    Console.WriteLine($"                         Id: {clientGuid}");
                     Console.WriteLine($"                  TimeStamp: {e.Timestamp}");
                     Console.WriteLine($"                     Values:\n" +
                                       $"                       [{string.Join(", ", e.ValuedList)}]");
@@ -76,12 +107,12 @@ public partial class Server
                 else
                 {
                     Console.ForegroundColor = ConsoleColor.DarkGray;
-                    Console.WriteLine($"      Mouse {e.Action} (X,Y) = ({e.X}, {e.Y}) -> {clientGuid}");
+                    Console.WriteLine($"      Mouse {e.Action} (X,Y) = ({e.X}, {e.Y})");
                     Console.ResetColor();
                 }
 
                 // Call back to client using notification
-                await _mouseStreamListener.OnNextValue(e);
+                await _mouseStreamListeners[clientGuid].OnNextValue(e);
             }
             catch (Exception ex)
             {
@@ -91,27 +122,37 @@ public partial class Server
 
         async void OnError(Exception error)
         {
-            if (isCancel) return;
-
             Console.WriteLine($"Mouse stream error: {error.Message}");
-            await _mouseStreamListener.OnError(error.Message);
+            await _mouseStreamListeners[clientGuid].OnError(error.Message);
         }
 
         async void OnCompleted()
         {
-            if (isCancel) return;
-
             Console.WriteLine("Mouse stream completed");
-            await _mouseStreamListener.OnCompleted();
+            await _mouseStreamListeners[clientGuid].OnCompleted();
         }
+
+        return Task.CompletedTask;
     }
 
-    // Unsubscribe from mouse stream
-    public Task UnsubscribeFromMouseStream()
+    public Task Unsubscribe(Guid clientGuid)
     {
-        _mouseSubscription?.Dispose();
-        _mouseSubscription = null!;
-        Console.WriteLine("  Client unsubscribed from mouse stream");
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.WriteLine($"  Client unsubscribing from mouse data stream clientId = {clientGuid}");
+        Console.ResetColor();
+
+        if (_mouseSubscriptions.TryGetValue(clientGuid, out IDisposable? subscription))
+        {
+            subscription.Dispose();
+            _mouseSubscriptions.Remove(clientGuid);
+        }
+
+        if (_mouseStreamListeners.ContainsKey(clientGuid))
+        {
+            _mouseStreamListeners.Remove(clientGuid);
+        }
+
+        Console.WriteLine($"  Client {clientGuid} unsubscribed from mouse data stream");
         return Task.CompletedTask;
     }
 }

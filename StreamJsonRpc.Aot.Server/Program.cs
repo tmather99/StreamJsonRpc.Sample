@@ -1,10 +1,8 @@
 ﻿using System.IO.Pipes;
 using StreamJsonRpc;
-using StreamJsonRpc.Aot.Common;
-using StreamJsonRpc.Aot.Common.UserInfoStream;
 using StreamJsonRpc.Aot.Server;
 using StreamJsonRpc.Aot.Server.Mouse;
-using StreamJsonRpc.Aot.Server.UserService;
+using StreamJsonRpc.Aot.Server.MouseStream;
 
 internal class Program
 {
@@ -47,7 +45,7 @@ internal class Program
                     PipeOptions.Asynchronous);
 
                 await stream.WaitForConnectionAsync();
-                await RunAsync(stream, ++clientRequests);
+                await Server.RunAsync(stream, ++clientRequests);
             }
         }
         finally
@@ -61,12 +59,13 @@ internal class Program
         // Start the mouse capture service
         static void StartMouseCaptureService()
         {
-            _mouseCaptureService = new MouseCaptureService(Server.PublishMouseEventGlobal);
+            _mouseCaptureService = new MouseCaptureService(MouseDataStream.PublishMouseEventGlobal);
 
             _ = Task.Run(async () =>
             {
                 try
                 {
+                    Console.WriteLine("MouseDataStream is connected to global mouse service.");
                     await _mouseCaptureService.StartAsync();
                 }
                 catch (Exception ex)
@@ -74,45 +73,6 @@ internal class Program
                     Console.WriteLine($"Failed to start mouse capture: {ex.Message}");
                 }
             });
-        }
-
-        // Handle each client connection
-        static async Task RunAsync(NamedPipeServerStream pipe, int requestId)
-        {
-            await Console.Error.WriteLineAsync($"  Connection request #{requestId} received.");
-
-            // Set up JSON-RPC over the named pipe
-            JsonRpc jsonRpc = new(MessagePackHandler.Create(pipe)) {
-                CancelLocallyInvokedMethodsWhenConnectionIsClosed = true
-            };
-
-            jsonRpc.Disconnected += static async delegate (object? o, JsonRpcDisconnectedEventArgs e) {
-                Console.WriteLine("\nRPC connection closed");
-                Console.WriteLine($"  Reason: {e.Reason}");
-                Console.WriteLine($"  Description: {e.Description}");
-                if (e.Exception != null)
-                    Console.WriteLine($"  Exception: {e.Exception}");
-            };
-
-            RegisterTypes(jsonRpc);
-
-            jsonRpc.StartListening();
-
-            //await jsonRpc.Completion;
-            await Console.Error.WriteLineAsync($"  Request #{requestId} terminated.");
-        }
-
-
-        // Do not use reflection. Everything must be known at compile time.
-        static void RegisterTypes(JsonRpc jsonRpc)
-        {
-            RpcTargetMetadata targetMetadata = RpcTargetMetadata.FromShape<IServer>();
-            Server server = new Server(jsonRpc);
-            jsonRpc.AddLocalRpcTarget(targetMetadata, server, null);
-
-            targetMetadata = RpcTargetMetadata.FromShape<IUserService>();
-            UserService service = new UserService(jsonRpc);
-            jsonRpc.AddLocalRpcTarget(targetMetadata, service, null);
         }
     }
 }

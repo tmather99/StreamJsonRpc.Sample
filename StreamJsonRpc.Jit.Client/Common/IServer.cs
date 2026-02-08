@@ -17,7 +17,7 @@ public interface IServer
 
     // Counter observer operations
     Task SetObserver(IObserver<int> observer, CancellationToken ct);
-    Task<IObserver<int>> GetObserver(CancellationToken cancellationToken);
+    Task<IObserver<int>> GetObserver(CancellationToken ct);
     Task SetCounterObserver(IObserver<int> observer, Guid guid, CancellationToken ct);
 
     // async enumerable operations
@@ -32,8 +32,4 @@ public interface IServer
     // mouse stream start/stop subscription
     Task SubscribeToNumberStream();
     Task UnsubscribeFromNumberStream();
-
-    // number stream start/stop subscription
-    Task SubscribeToMouseStream();
-    Task UnsubscribeFromMouseStream();
 }
