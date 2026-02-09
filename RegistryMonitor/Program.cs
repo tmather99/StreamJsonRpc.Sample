@@ -1,13 +1,13 @@
-﻿using System.Diagnostics;
+﻿using Microsoft.Win32;
+using System.Diagnostics;
 using System.Security.AccessControl;
 using System.Security.Principal;
-using Microsoft.Win32;
 
 namespace RegistryListener;
 
 class Program
 {
-    private const string SubKey = @"Software\MyApp";
+    private const string SubKey = @"HKEY_CURRENT_USER\Software\MyApp";
 
     static void Main()
     {
@@ -17,6 +17,14 @@ class Program
         Console.WriteLine("1) Setup auditing (run once as admin)");
         Console.WriteLine("2) Start watcher (listen for registry changes)");
         Console.Write("Select option: ");
+
+        var source1 = new RegistryEventSource(SubKey);
+        source1.Subscribe(new ConsoleObserver());
+        source1.Start();   // start watcher first!
+
+        // Then trigger registry changes
+        Registry.SetValue(@"HKEY_CURRENT_USER\Software\MyApp", "Counter", 123);
+
 
         var choice = Console.ReadLine();
 
@@ -68,6 +76,11 @@ class Program
             RegistryKeyPermissionCheck.ReadWriteSubTree,
             RegistryRights.ChangePermissions | RegistryRights.ReadKey);
 
+        if (key == null)
+        {
+            throw new InvalidOperationException($"Registry key '{subPath}' could not be opened.");
+        }
+
         var security = key.GetAccessControl(AccessControlSections.Audit);
 
         var rule = new RegistryAuditRule(
@@ -83,7 +96,8 @@ class Program
 
     static void Run(string file, string args)
     {
-        Process.Start(new ProcessStartInfo(file, args) {
+        Process.Start(new ProcessStartInfo(file, args)
+        {
             Verb = "runas",
             UseShellExecute = true,
             CreateNoWindow = true

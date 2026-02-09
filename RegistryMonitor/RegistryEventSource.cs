@@ -1,4 +1,6 @@
-﻿namespace RegistryListener;
+﻿using System.Diagnostics.Eventing.Reader;
+
+namespace RegistryListener;
 
 public class RegistryEventSource : IObservable<RegistryChangeEvent>
 {
@@ -30,12 +32,18 @@ public class RegistryEventSource : IObservable<RegistryChangeEvent>
 
     public void Stop() => _watcher?.Dispose();
 
-    private void OnEvent(object sender, EventRecordWrittenEventArgs e)
+    private void OnEvent(object? sender, EventRecordWrittenEventArgs e)
     {
         if (e.EventRecord == null) return;
 
         using var r = e.EventRecord;
         var p = r.Properties;
+
+        for (int i = 0; i < r.Properties.Count; i++)
+        {
+            Console.WriteLine($"{i}: {r.Properties[i].Value}");
+        }
+
 
         string keyPath = p[5].Value?.ToString() ?? "";
         if (!keyPath.Contains(_filterKey, StringComparison.OrdinalIgnoreCase))

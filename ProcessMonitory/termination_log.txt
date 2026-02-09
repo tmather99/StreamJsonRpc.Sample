@@ -1,0 +1,50 @@
+[2026-02-08 13:45:05] PROCESS TERMINATED
+Process Name: auditpol.exe
+Process ID: 27416
+Exit Status: 0x0
+User: tmatherF23D3\tmather
+Executable Path: C:\Windows\System32\auditpol.exe
+
+================================================================================
+[2026-02-08 13:45:05] PROCESS TERMINATED
+Process Name: conhost.exe
+Process ID: 42656
+Exit Status: 0x0
+User: tmatherF23D3\tmather
+Executable Path: C:\Windows\System32\conhost.exe
+
+================================================================================
+[2026-02-08 13:45:06] PROCESS TERMINATED
+Process Name: git.exe
+Process ID: 30904
+Exit Status: 0x0
+User: tmatherF23D3\tmather
+Executable Path: C:\Program Files\Microsoft Visual Studio\18\Enterprise\Common7\IDE\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\mingw64\bin\git.exe
+
+================================================================================
+[2026-02-08 13:45:06] PROCESS TERMINATED
+Process Name: conhost.exe
+Process ID: 38920
+Exit Status: 0x0
+User: tmatherF23D3\tmather
+Executable Path: C:\Windows\System32\conhost.exe
+
+================================================================================
+[2026-02-08 13:45:07] PROCESS TERMINATED
+Process Name: git.exe
+Process ID: 19276
+Exit Status: 0x0
+User: tmatherF23D3\tmather
+Executable Path: C:\Program Files\Microsoft Visual Studio\18\Enterprise\Common7\IDE\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\mingw64\bin\git.exe
+
+================================================================================
+[2026-02-08 13:45:07] PROCESS TERMINATED
+Process Name: conhost.exe
+Process ID: 22904
+Exit Status: 0x0
+User: tmatherF23D3\tmather
+Executable Path: C:\Windows\System32\conhost.exe
+
+================================================================================
+[2026-02-08 13:45:08] Termination monitoring completed.
+
