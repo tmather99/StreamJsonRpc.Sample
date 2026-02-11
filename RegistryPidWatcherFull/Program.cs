@@ -26,15 +26,15 @@ class Program
         while (true)
         {
             // Wait for either HKCU or HKLM to have a change
-            WaitForAnyChange();
+            WaitForAnyRegistryChanges();
 
             // Read and display new events from the HKLM event log
-            ReadEvents(hkcuReader);
-            ReadEvents(hklmReader);
+            ReadAndParseEventLog(hkcuReader);
+            ReadAndParseEventLog(hklmReader);
         }
 
         // Local function to wait for either HKCU or HKLM change
-        void WaitForAnyChange()
+        void WaitForAnyRegistryChanges()
         {
             PrintHelp();
 
@@ -56,7 +56,7 @@ class Program
         }
 
         // Local function to read and display events from an EventLogReader
-        void ReadEvents(EventLogReader eventLogReader)
+        void ReadAndParseEventLog(EventLogReader eventLogReader)
         {
             // Read and display new events from the HKCU event log
             foreach (var (pid,
