@@ -2,9 +2,9 @@ using System.ComponentModel;
 using System.Diagnostics;
 using Microsoft.Win32;
 using Microsoft.Win32.SafeHandles;
-using static RegistryMonitor.NativeMethods;
+using static RegistryPidWatcher.NativeMethods;
 
-namespace RegistryMonitor;
+namespace RegistryPidWatcher;
 
 // This class is responsible for watching a specific registry key for changes. 
 // It ensures that the necessary audit policies are in place, configures the SACL/ACL for the key,

@@ -70,9 +70,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestCrash", "ProcessMonitor.TestCrash\TestCrash.csproj", "{295E9153-26B9-6F9C-545A-CA7AFE820E91}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Registry", "Registry", "{D062B9C3-29E2-49EE-8704-F3E345280ACE}"
-	ProjectSection(SolutionItems) = preProject
-		RegistryTestHighLoad.ps1 = RegistryTestHighLoad.ps1
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RegistryMonitor", "RegistryMonitor\RegistryMonitor.csproj", "{91D9A17D-47BD-3A89-94FF-7BC0717ECB33}"
 EndProject

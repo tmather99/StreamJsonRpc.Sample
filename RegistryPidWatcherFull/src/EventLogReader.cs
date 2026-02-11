@@ -2,7 +2,7 @@ using System.Diagnostics.Eventing.Reader;
 using System.Xml;
 using System.Xml.Linq;
 
-namespace RegistryMonitor;
+namespace RegistryPidWatcher;
 
 // This class is responsible for reading and parsing registry-related events from the Windows Security event log.
 public class EventLogReader

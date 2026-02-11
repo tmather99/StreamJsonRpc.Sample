@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices;
 
-namespace RegistryMonitor;
+namespace RegistryPidWatcher;
 
 internal static class NativeMethods
 {

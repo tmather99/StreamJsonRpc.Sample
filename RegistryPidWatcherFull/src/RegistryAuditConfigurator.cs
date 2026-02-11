@@ -4,7 +4,7 @@ using System.Security.AccessControl;
 using System.Security.Principal;
 using Microsoft.Win32;
 
-namespace RegistryMonitor;
+namespace RegistryPidWatcher;
 
 /// <summary>
 /// C# equivalent of SetupRegistryAudit.ps1.

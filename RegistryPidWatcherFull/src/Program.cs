@@ -1,4 +1,4 @@
-namespace RegistryMonitor;
+namespace RegistryPidWatcher;
 
 class Program
 {
