@@ -8,6 +8,7 @@ internal static class NativeMethods
     public const int REG_NOTIFY_CHANGE_NAME = 0x00000001;
     public const int REG_NOTIFY_CHANGE_LAST_SET = 0x00000004;
     public static readonly UIntPtr HKEY_LOCAL_MACHINE = (UIntPtr)0x80000002u;
+    public static readonly UIntPtr HKEY_CURRENT_USER = (UIntPtr)0x80000001u;
 
     [DllImport("advapi32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
     public static extern int RegOpenKeyEx(UIntPtr hKey, string subKey, int ulOptions, int samDesired, out IntPtr phkResult);

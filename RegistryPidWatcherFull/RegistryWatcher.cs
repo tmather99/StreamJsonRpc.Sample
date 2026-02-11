@@ -12,25 +12,34 @@ namespace RegistryMonitor;
 public class RegistryWatcher : IDisposable
 {
     private readonly string _subKey;
+    private readonly UIntPtr _rootHive;
     private IntPtr _hKey;
     private IntPtr _hEvent;
     private EventWaitHandle _waitHandle = null!;
     private bool _disposed;
     private static bool _globalAuditingEnabled = false;
 
-    public RegistryWatcher(string subKey)
+    public WaitHandle WaitHandle => _waitHandle;
+
+    public RegistryWatcher(string subKey, bool useCurrentUser = false)
     {
         _subKey = subKey;
+        _rootHive = useCurrentUser ? HKEY_CURRENT_USER : HKEY_LOCAL_MACHINE;
 
         // 1. Make sure audit policy is enabled at OS level
         EnableGlobalRegistryAuditing();
 
-        // 2. Configure SACL/ACL on the root key (HKLM style)
-        string psPath = $"HKLM:\\{_subKey}";
+        // 2. Configure SACL/ACL on the root key. We currently only configure auditing via PowerShell-style
+        // paths for HKLM and HKCU.
+        string hivePrefix = useCurrentUser ? "HKCU" : "HKLM";
+        string psPath = $"{hivePrefix}:\\{_subKey}";
         RegistryAuditConfigurator.ConfigureRegistryAudit([psPath]);
 
         // 3. Open the key and start watching
         OpenKey();
+
+        // Initial wait to ensure we're subscribed before any events are fired
+        this.WaitForChange();
     }
 
     // This method enables global auditing for registry events using the auditpol.exe command-line tool.
@@ -65,12 +74,14 @@ public class RegistryWatcher : IDisposable
             _hKey = IntPtr.Zero;
         }
 
-        int result = RegOpenKeyEx(HKEY_LOCAL_MACHINE, _subKey, 0, KEY_NOTIFY, out _hKey);
+        int result = RegOpenKeyEx(_rootHive, _subKey, 0, KEY_NOTIFY, out _hKey);
 
         if (result != 0)
         {
-            using var key = Registry.LocalMachine.CreateSubKey(_subKey, RegistryKeyPermissionCheck.ReadWriteSubTree);
-            result = RegOpenKeyEx(HKEY_LOCAL_MACHINE, _subKey, 0, KEY_NOTIFY, out _hKey);
+            using var key = (_rootHive == HKEY_CURRENT_USER ? Registry.CurrentUser : Registry.LocalMachine)
+                .CreateSubKey(_subKey, RegistryKeyPermissionCheck.ReadWriteSubTree);
+            // Confirming usage of HKEY_CURRENT_USER constant for compilation
+            result = RegOpenKeyEx(_rootHive, _subKey, 0, KEY_NOTIFY, out _hKey);
             if (result != 0) throw new Win32Exception(result, $"Failed to open or create {_subKey}");
         }
 
@@ -84,7 +95,7 @@ public class RegistryWatcher : IDisposable
 
     // This method waits for a change to occur on the monitored registry key.
     // If the key is deleted while monitoring, it will wait for the key to be recreated.
-    public void WaitForChange()
+    public void WaitForChange(bool blocked = false)
     {
         while (true)
         {
@@ -100,9 +111,13 @@ public class RegistryWatcher : IDisposable
 
                 if (res != 0) throw new Win32Exception(res);
 
-                // Wait for the event to be signaled, indicating a registry change has occurred.
-                _waitHandle.WaitOne();
-                ResetEvent(_hEvent);
+                if (blocked)
+                {
+                    // Wait for the event to be signaled, indicating a registry change has occurred.
+                    _waitHandle.WaitOne();
+                    ResetEvent(_hEvent);
+                }
+
                 break;
             }
             catch (Win32Exception ex) when (ex.NativeErrorCode == 1018)
@@ -122,7 +137,8 @@ public class RegistryWatcher : IDisposable
         try
         {
             // Reconfigure audit settings in case the key was recreated without the necessary SACL/ACL.
-            string psPath = $"HKLM:\\{_subKey}";
+            string hivePrefix = _rootHive == HKEY_CURRENT_USER ? "HKCU" : "HKLM";
+            string psPath = $"{hivePrefix}:\\{_subKey}";
             RegistryAuditConfigurator.ConfigureRegistryAudit([psPath]);
             OpenKey();
 

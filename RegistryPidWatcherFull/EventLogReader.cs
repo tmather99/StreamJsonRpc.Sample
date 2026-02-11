@@ -76,10 +76,17 @@ public class EventLogReader
 
             string key = Get("ObjectName");
 
-            // skip events that don't match the prefix
-            string expectedPrefix = "\\REGISTRY\\" + _registryPath;
+            if (string.IsNullOrEmpty(key))
+            {
+                continue;
+            }
 
-            if (key == null || !key.StartsWith(expectedPrefix, StringComparison.OrdinalIgnoreCase))
+            // Normalize registry path from Security log into the same format as _registryPath
+            string normalizedKey = NormalizeRegistryPath(key);
+
+            // skip events that don't match the prefix
+            if (string.IsNullOrEmpty(normalizedKey) ||
+                !normalizedKey.StartsWith(_registryPath, StringComparison.OrdinalIgnoreCase))
             {
                 continue;
             }
@@ -111,6 +118,33 @@ public class EventLogReader
                           operationType,
                           newValue,
                           inferredAction);
+
+            // Helper method to normalize registry paths from the Security log format to a more standard format for comparison.
+            //   expectedPrefix = "\\REGISTRY\\USER\\Software\\MyApp1"
+            //   Actual event: \REGISTRY\USER\S-1-5-...-1000\Software\MyApp1
+            string NormalizeRegistryPath(string raw)
+            {
+                // HKLM: \REGISTRY\MACHINE\SOFTWARE\WorkspaceONE\Satori
+                if (raw.StartsWith(@"\REGISTRY\MACHINE\", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "MACHINE\\" + raw.Substring(@"\REGISTRY\MACHINE\".Length);
+                }
+
+                // HKCU: \REGISTRY\USER\<sid>\Software\MyApp1
+                if (raw.StartsWith(@"\REGISTRY\USER\", StringComparison.OrdinalIgnoreCase))
+                {
+                    var afterUser = raw.Substring(@"\REGISTRY\USER\".Length);
+                    var firstBackslash = afterUser.IndexOf('\\');
+                    if (firstBackslash > 0)
+                    {
+                        // Strip SID, keep path after it: Software\MyApp1\...
+                        var withoutSid = afterUser.Substring(firstBackslash + 1);
+                        return "USER\\" + withoutSid;
+                    }
+                }
+
+                return raw;
+            }
 
             // Helper method to extract the value of a specific data field from the event XML.
             string Get(string name)

@@ -6,37 +6,68 @@ class Program
 
     static void Main()
     {
-        const string key = @"SOFTWARE\WorkspaceONE\Satori";
-        const string keyFullPath = $@"MACHINE\{key}";
+        // event log source is "USER\Software\MyApp1"
+        const string hkcuSubKey = @"Software\MyApp1";
+        const string hkcuKeyFullPath = $@"USER\{hkcuSubKey}";
+
+        // event log source is "MACHINE\SOFTWARE\WorkspaceONE\Satori"
+        const string hklmSubKey = @"SOFTWARE\WorkspaceONE\Satori";
+        const string hklmKeyFullPath = $@"MACHINE\{hklmSubKey}";
 
         ConsoleInput();
 
-        // Set up the registry watcher and event log parser
-        using var watcher = new RegistryWatcher(key);
+        // Set up the registry watchers and event log readers for both HKCU and HKLM
+        using var hkcuWatcher = new RegistryWatcher(hkcuSubKey, useCurrentUser: true);
+        using var hklmWatcher = new RegistryWatcher(hklmSubKey);
 
-        // Initial printout of help information
-        var reader = new EventLogReader(keyFullPath);
+        var hkcuReader = new EventLogReader(hkcuKeyFullPath);
+        var hklmReader = new EventLogReader(hklmKeyFullPath);
 
         while (true)
         {
+            // Wait for either HKCU or HKLM to have a change
+            WaitForAnyChange();
+
+            // Read and display new events from the HKLM event log
+            ReadEvents(hkcuReader);
+            ReadEvents(hklmReader);
+        }
+
+        // Local function to wait for either HKCU or HKLM change
+        void WaitForAnyChange()
+        {
             PrintHelp();
 
-            // Wait for a registry change event to be logged before attempting to read it
-            watcher.WaitForChange();
+            // wait for either HKCU or HKLM
+            int index = WaitHandle.WaitAny(new[] { hkcuWatcher.WaitHandle, hklmWatcher.WaitHandle });
 
-            // Small delay to ensure the event log is updated before we read it
+            // re-arm whichever fired
+            if (index == 0)
+            {
+                hkcuWatcher.WaitForChange();
+            }
+            else
+            {
+                hklmWatcher.WaitForChange();
+            }
+
+            // small delay to ensure event log is written
             Thread.Sleep(1000);
+        }
 
-            // Read and display new events from the event log
+        // Local function to read and display events from an EventLogReader
+        void ReadEvents(EventLogReader eventLogReader)
+        {
+            // Read and display new events from the HKCU event log
             foreach (var (pid,
-                          proc,
-                          regKey,
-                          valueName,
-                          accessMaskRaw,
-                          accessMaskText,
-                          operationType,
-                          newValue,
-                          inferredAction) in reader.ReadEvents())
+                         proc,
+                         regKey,
+                         valueName,
+                         accessMaskRaw,
+                         accessMaskText,
+                         operationType,
+                         newValue,
+                         inferredAction) in eventLogReader.ReadEvents())
             {
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine($"[{DateTime.Now}]");
@@ -53,15 +84,30 @@ class Program
             }
         }
 
+        void PrintMonitorRegistry()
+        {
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine("Monitoring registry:");
+            Console.ResetColor();
+            Console.ForegroundColor = ConsoleColor.DarkYellow;
+            Console.WriteLine($"  {hkcuKeyFullPath}");
+            Console.WriteLine($"  {hklmKeyFullPath}");
+            Console.WriteLine();
+            Console.ResetColor();
+        }
+
         void PrintHelp()
         {
             Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.WriteLine($"Monitoring registry key:  {keyFullPath}\n");
+            Console.WriteLine("Press ESC to exit, C to clear, D to toggle XML dump.");
+            Console.WriteLine();
             Console.ResetColor();
         }
 
         void ConsoleInput()
         {
+            PrintMonitorRegistry();
+
             var inputThread = new Thread(() =>
             {
                 while (true)
@@ -76,6 +122,7 @@ class Program
                     else if (key == ConsoleKey.C)
                     {
                         Console.Clear();
+                        PrintMonitorRegistry();
                     }
                     else if (key == ConsoleKey.D)
                     {
