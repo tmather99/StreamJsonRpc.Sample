@@ -2,9 +2,13 @@ using System.ComponentModel;
 using System.Diagnostics;
 using Microsoft.Win32;
 using Microsoft.Win32.SafeHandles;
+using static RegistryMonitor.NativeMethods;
 
 namespace RegistryMonitor;
 
+// This class is responsible for watching a specific registry key for changes. 
+// It ensures that the necessary audit policies are in place, configures the SACL/ACL for the key,
+// and uses Windows API calls to monitor for changes.
 public class RegistryWatcher : IDisposable
 {
     private readonly string _subKey;
@@ -29,6 +33,7 @@ public class RegistryWatcher : IDisposable
         OpenKey();
     }
 
+    // This method enables global auditing for registry events using the auditpol.exe command-line tool.
     private void EnableGlobalRegistryAuditing()
     {
         if (_globalAuditingEnabled) return;
@@ -51,69 +56,83 @@ public class RegistryWatcher : IDisposable
         _globalAuditingEnabled = true;
     }
 
+    // This method attempts to open the specified registry key with the necessary permissions for monitoring.
     private void OpenKey()
     {
         if (_hKey != IntPtr.Zero)
         {
-            NativeMethods.RegCloseKey(_hKey);
+            RegCloseKey(_hKey);
             _hKey = IntPtr.Zero;
         }
 
-        int result = NativeMethods.RegOpenKeyEx(NativeMethods.HKEY_LOCAL_MACHINE, _subKey, 0, NativeMethods.KEY_NOTIFY, out _hKey);
+        int result = RegOpenKeyEx(HKEY_LOCAL_MACHINE, _subKey, 0, KEY_NOTIFY, out _hKey);
 
         if (result != 0)
         {
             using var key = Registry.LocalMachine.CreateSubKey(_subKey, RegistryKeyPermissionCheck.ReadWriteSubTree);
-            result = NativeMethods.RegOpenKeyEx(NativeMethods.HKEY_LOCAL_MACHINE, _subKey, 0, NativeMethods.KEY_NOTIFY, out _hKey);
+            result = RegOpenKeyEx(HKEY_LOCAL_MACHINE, _subKey, 0, KEY_NOTIFY, out _hKey);
             if (result != 0) throw new Win32Exception(result, $"Failed to open or create {_subKey}");
         }
 
-        _hEvent = NativeMethods.CreateEvent(IntPtr.Zero, true, false, null);
+        // Create an event that will be signaled when a registry change occurs.
+        // This event will be used in the RegNotifyChangeKeyValue call.
+        _hEvent = CreateEvent(IntPtr.Zero, true, false, null);
         _waitHandle = new EventWaitHandle(false, EventResetMode.ManualReset) {
             SafeWaitHandle = new SafeWaitHandle(_hEvent, ownsHandle: false)
         };
     }
 
+    // This method waits for a change to occur on the monitored registry key.
+    // If the key is deleted while monitoring, it will wait for the key to be recreated.
     public void WaitForChange()
     {
         while (true)
         {
             try
             {
-                int res = NativeMethods.RegNotifyChangeKeyValue(_hKey, true,
-                    NativeMethods.REG_NOTIFY_CHANGE_LAST_SET | NativeMethods.REG_NOTIFY_CHANGE_NAME, _hEvent, true);
+                // Set up the registry change notification. This will signal the event when a change occurs.
+                // https://learn.microsoft.com/en-us/windows/win32/api/winreg/nf-winreg-regnotifychangekeyvalue
+                int res = RegNotifyChangeKeyValue(_hKey,
+                                                  bWatchSubtree: true,
+                                                  REG_NOTIFY_CHANGE_LAST_SET | REG_NOTIFY_CHANGE_NAME,
+                                                  _hEvent,
+                                                  fAsynchronous: true);
+
                 if (res != 0) throw new Win32Exception(res);
 
+                // Wait for the event to be signaled, indicating a registry change has occurred.
                 _waitHandle.WaitOne();
-                NativeMethods.ResetEvent(_hEvent);
+                ResetEvent(_hEvent);
                 break;
             }
             catch (Win32Exception ex) when (ex.NativeErrorCode == 1018)
             {
+                // ERROR_KEY_DELETED means the key was deleted while we were waiting.
+                // In this case, we need to wait for the key to be recreated before we can continue monitoring.
                 Console.WriteLine("Root key deleted. Waiting for recreation...");
-                WaitForRecreation();
+                RecreateRegistryMonitor();
             }
         }
     }
 
-    private void WaitForRecreation()
+    // This method continuously attempts to open the registry key until it succeeds,
+    // which indicates that the key has been recreated after being deleted.
+    private void RecreateRegistryMonitor()
     {
-        while (true)
+        try
         {
-            try
-            {
-                string psPath = $"HKLM:\\{_subKey}";
-                RegistryAuditConfigurator.ConfigureRegistryAudit([psPath]);
-                OpenKey();
-                Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.WriteLine("Root key recreated. Monitoring resumed.\n");
-                Console.ResetColor();
-                break;
-            }
-            catch
-            {
-                System.Threading.Thread.Sleep(1000);
-            }
+            // Reconfigure audit settings in case the key was recreated without the necessary SACL/ACL.
+            string psPath = $"HKLM:\\{_subKey}";
+            RegistryAuditConfigurator.ConfigureRegistryAudit([psPath]);
+            OpenKey();
+
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine("Root key recreated. Monitoring resumed.\n");
+            Console.ResetColor();
+        }
+        catch
+        {
+            System.Threading.Thread.Sleep(1000);
         }
     }
 
@@ -123,6 +142,6 @@ public class RegistryWatcher : IDisposable
         _disposed = true;
         _waitHandle?.Dispose();
         if (_hKey != IntPtr.Zero)
-            NativeMethods.RegCloseKey(_hKey);
+            RegCloseKey(_hKey);
     }
 }

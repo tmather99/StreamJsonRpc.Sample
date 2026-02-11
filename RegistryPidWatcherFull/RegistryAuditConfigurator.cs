@@ -1,8 +1,8 @@
-using Microsoft.Win32;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Security.AccessControl;
 using System.Security.Principal;
+using Microsoft.Win32;
 
 namespace RegistryMonitor;
 
@@ -56,6 +56,7 @@ public static class RegistryAuditConfigurator
         }
     }
 
+    // This method enables the global audit policy for registry access events using the auditpol.exe tool.
     private static void EnableRegistryAuditPolicy()
     {
         var systemRoot = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
@@ -63,12 +64,12 @@ public static class RegistryAuditConfigurator
 
         if (!File.Exists(auditPolPath))
         {
-            Debug.WriteLine("auditpol.exe not found; cannot configure audit policy. Ensure 'Audit Object Access' / 'Registry' is enabled manually.");
+            Debug.WriteLine("auditpol.exe not found; cannot configure audit policy. " +
+                            "Ensure 'Audit Object Access' / 'Registry' is enabled manually.");
             return;
         }
 
-        var startInfo = new ProcessStartInfo
-        {
+        var startInfo = new ProcessStartInfo {
             FileName = auditPolPath,
             Arguments = "/set /subcategory:\"Registry\" /success:enable /failure:enable",
             UseShellExecute = false,
@@ -85,7 +86,8 @@ public static class RegistryAuditConfigurator
 
         if (process.ExitCode != 0)
         {
-            Debug.WriteLine($"Failed to configure audit policy (exit code {process.ExitCode}). You may need to run as Administrator or configure policy via Local/Group Policy.");
+            Debug.WriteLine($"Failed to configure audit policy (exit code {process.ExitCode})." +
+                            $" You may need to run as Administrator or configure policy via Local/Group Policy.");
         }
     }
 
@@ -119,12 +121,11 @@ public static class RegistryAuditConfigurator
             throw new NotSupportedException($"Unsupported registry path format: {keyPath} (expected HKCU:\\ or HKLM:\\).");
         }
 
-        const RegistryRights rights =
-            RegistryRights.ReadKey |
-            RegistryRights.WriteKey |
-            RegistryRights.ReadPermissions |
-            RegistryRights.ChangePermissions |
-            RegistryRights.TakeOwnership;
+        const RegistryRights rights = RegistryRights.ReadKey |
+                                      RegistryRights.WriteKey |
+                                      RegistryRights.ReadPermissions |
+                                      RegistryRights.ChangePermissions |
+                                      RegistryRights.TakeOwnership;
 
         var key = hive.OpenSubKey(subKeyPath, RegistryKeyPermissionCheck.ReadWriteSubTree, rights);
 
@@ -147,6 +148,8 @@ public static class RegistryAuditConfigurator
         return key;
     }
 
+    // This method enables SACL auditing on the specified registry key for the "Everyone" group,
+    // allowing both success and failure audits for various registry operations.
     private static void EnableRegistryKeySacl(string keyPath)
     {
         using var regKey = GetRegistryKeyFromPath(keyPath, createIfMissing: true);
@@ -155,13 +158,12 @@ public static class RegistryAuditConfigurator
 
         var identity = new NTAccount("Everyone");
 
-        const RegistryRights rights =
-            RegistryRights.QueryValues |
-            RegistryRights.SetValue |
-            RegistryRights.CreateSubKey |
-            RegistryRights.Delete |
-            RegistryRights.ChangePermissions |
-            RegistryRights.TakeOwnership;
+        const RegistryRights rights = RegistryRights.QueryValues |
+                                      RegistryRights.SetValue |
+                                      RegistryRights.CreateSubKey |
+                                      RegistryRights.Delete |
+                                      RegistryRights.ChangePermissions |
+                                      RegistryRights.TakeOwnership;
 
         const InheritanceFlags inheritanceFlags = InheritanceFlags.ContainerInherit;
         const PropagationFlags propagationFlags = PropagationFlags.None;
@@ -179,6 +181,7 @@ public static class RegistryAuditConfigurator
         regKey.SetAccessControl(regSec);
     }
 
+    // This method ensures that the specified monitor identity (e.g., a user account) has the necessary ACL permissions
     private static void EnsureMonitorAclAccess(string keyPath, string monitorIdentity)
     {
         using var regKey = GetRegistryKeyFromPath(keyPath, createIfMissing: true);
