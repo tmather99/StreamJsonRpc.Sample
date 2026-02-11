@@ -53,15 +53,19 @@ class Program
 
             watcher.WaitForChange();
             Thread.Sleep(1000);
-            foreach (var (pid, proc, regKey, valueName) in reader.ReadEvents())
+            foreach (var (pid, proc, regKey, valueName, accessMaskRaw, accessMaskText, operationType, newValue, inferredAction) in reader.ReadEvents())
             {
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine($"[{DateTime.Now}]");
                 Console.ResetColor();
                 Console.WriteLine($"  Key: {regKey}");
                 Console.WriteLine($"  Value: {valueName}");
+                Console.WriteLine($"  NewValue: {newValue}");
                 Console.WriteLine($"  PID: {pid}");
                 Console.WriteLine($"  Process: {proc}");
+                Console.WriteLine($"  OperationType: {operationType}");
+                Console.WriteLine($"  AccessMask: {accessMaskRaw} ({accessMaskText})");
+                Console.WriteLine($"  InferredAction: {inferredAction}");
                 Console.WriteLine();
             }
         }
