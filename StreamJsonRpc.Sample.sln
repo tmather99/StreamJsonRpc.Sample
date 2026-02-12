@@ -75,6 +75,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RegistryMonitor", "Registry
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RegistryPidWatcher", "RegistryPidWatcherFull\RegistryPidWatcher.csproj", "{F10CBB51-51A8-634B-DD8D-60D7C0611716}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EtwProcessMonitor", "ETWProcessMonitor\EtwProcessMonitor.csproj", "{BB0D635F-85D7-308B-D6C3-C2E148718FB8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -165,6 +167,10 @@ Global
 		{F10CBB51-51A8-634B-DD8D-60D7C0611716}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F10CBB51-51A8-634B-DD8D-60D7C0611716}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F10CBB51-51A8-634B-DD8D-60D7C0611716}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BB0D635F-85D7-308B-D6C3-C2E148718FB8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BB0D635F-85D7-308B-D6C3-C2E148718FB8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BB0D635F-85D7-308B-D6C3-C2E148718FB8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BB0D635F-85D7-308B-D6C3-C2E148718FB8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -189,6 +195,7 @@ Global
 		{295E9153-26B9-6F9C-545A-CA7AFE820E91} = {134EB63E-1BE8-4CD0-9E82-2AC01D93316C}
 		{91D9A17D-47BD-3A89-94FF-7BC0717ECB33} = {D062B9C3-29E2-49EE-8704-F3E345280ACE}
 		{F10CBB51-51A8-634B-DD8D-60D7C0611716} = {D062B9C3-29E2-49EE-8704-F3E345280ACE}
+		{BB0D635F-85D7-308B-D6C3-C2E148718FB8} = {134EB63E-1BE8-4CD0-9E82-2AC01D93316C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D362BF52-6BAF-410F-A6F8-44CD54B274F0}

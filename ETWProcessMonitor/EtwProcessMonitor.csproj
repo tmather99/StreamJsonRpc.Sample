@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+
+    <!-- Native AOT settings -->
+    <PublishAot>true</PublishAot>
+    <OptimizationPreference>Speed</OptimizationPreference>
+    <StripSymbols>false</StripSymbols>
+
+    <!-- Suppress IL trimming warnings — all reflection is intentionally absent -->
+    <TrimmerRootDescriptor>TrimmerRoots.xml</TrimmerRootDescriptor>
+
+    <!-- Windows only -->
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <PlatformTarget>x64</PlatformTarget>
+    <SupportedOSPlatformVersion>6.0</SupportedOSPlatformVersion>
+  </PropertyGroup>
+
+  <!-- Native AOT publish profile -->
+  <!--
+    dotnet publish -c Release
+    Produces a single self-contained native binary in:
+      bin\Release\net9.0\win-x64\publish\EtwProcessMonitor.exe
+  -->
+
+</Project>
