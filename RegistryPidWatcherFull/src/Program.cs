@@ -4,6 +4,54 @@ class Program
 {
     public static bool DumpXml = false;
 
+    // ConsoleObserver implements IObserver<RegistryEvent> to receive registry events
+    // and print them to the console. It also implements IDisposable to allow unsubscribing
+    // from the watcher when disposed.
+    private sealed class ConsoleObserver : IObserver<RegistryEvent>, IDisposable
+    {
+        private readonly RegistryWatcher _watcher;
+        private bool _disposed;
+
+        public ConsoleObserver(RegistryWatcher watcher)
+        {
+            _watcher = watcher ?? throw new ArgumentNullException(nameof(watcher));
+        }
+
+        public void OnCompleted() { }
+        public void OnError(Exception error)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine($"Observer error: {error}");
+            Console.ResetColor();
+        }
+
+        public void OnNext(RegistryEvent value)
+        {
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine($"[{DateTime.Now}]");
+            Console.ResetColor();
+            Console.WriteLine($"  Key: {value.Key}");
+            Console.WriteLine($"  ValueName: {value.ValueName}");
+            Console.WriteLine($"  NewValue: {value.NewValue}");
+            Console.WriteLine($"  PID: {value.Pid}");
+            Console.WriteLine($"  Process: {value.Process}");
+            Console.WriteLine($"  OperationType: {value.OperationType}");
+            Console.WriteLine($"  AccessMask: {value.AccessMaskRaw} ({value.AccessMaskText})");
+            Console.WriteLine($"  InferredAction: {value.InferredAction}");
+            Console.WriteLine();
+        }
+
+        public void Dispose()
+        {
+            if (_disposed) return;
+
+            _disposed = true;
+            try { _watcher.Unsubscribe(this); } catch { }
+        }
+    }
+
+    // The Main method sets up two RegistryWatcher instances to monitor specific
+    // registry paths in HKCU and HKLM.
     static void Main()
     {
         // event log source is "USER\Software\MyApp1"
@@ -14,75 +62,21 @@ class Program
         const string hklmSubKey = @"SOFTWARE\WorkspaceONE\Satori";
         const string hklmKeyFullPath = $@"MACHINE\{hklmSubKey}";
 
-        ConsoleInput();
-
-        // Set up the registry watchers and event log readers for both HKCU and HKLM
+        // Set up the registry watchers for both HKCU and HKLM and subscribe console observers
         using var hkcuWatcher = new RegistryWatcher(hkcuSubKey, useCurrentUser: true);
         using var hklmWatcher = new RegistryWatcher(hklmSubKey);
 
-        var hkcuReader = new EventLogReader(hkcuKeyFullPath);
-        var hklmReader = new EventLogReader(hklmKeyFullPath);
+        var hkcuObserver = new ConsoleObserver(hkcuWatcher);
+        var hklmObserver = new ConsoleObserver(hklmWatcher);
 
-        while (true)
-        {
-            // Wait for either HKCU or HKLM to have a change
-            WaitForAnyRegistryChanges();
+        IDisposable hkcuSubscription = hkcuWatcher.Subscribe(hkcuObserver);
+        IDisposable hklmSubscription = hklmWatcher.Subscribe(hklmObserver);
 
-            // Read and display new events from the HKLM event log
-            ReadAndParseEventLog(hkcuReader);
-            ReadAndParseEventLog(hklmReader);
-        }
+        ConsoleInput();
 
-        // Local function to wait for either HKCU or HKLM change
-        void WaitForAnyRegistryChanges()
-        {
-            PrintHelp();
-
-            // wait for either HKCU or HKLM
-            int index = WaitHandle.WaitAny(new[] { hkcuWatcher.WaitHandle, hklmWatcher.WaitHandle });
-
-            // re-arm whichever fired
-            if (index == 0)
-            {
-                hkcuWatcher.WaitForChange();
-            }
-            else
-            {
-                hklmWatcher.WaitForChange();
-            }
-
-            // small delay to ensure event log is written
-            Thread.Sleep(1000);
-        }
-
-        // Local function to read and display events from an EventLogReader
-        void ReadAndParseEventLog(EventLogReader eventLogReader)
-        {
-            // Read and display new events from the HKCU event log
-            foreach (var (pid,
-                         proc,
-                         regKey,
-                         valueName,
-                         accessMaskRaw,
-                         accessMaskText,
-                         operationType,
-                         newValue,
-                         inferredAction) in eventLogReader.ReadEvents())
-            {
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine($"[{DateTime.Now}]");
-                Console.ResetColor();
-                Console.WriteLine($"  Key: {regKey}");
-                Console.WriteLine($"  ValueName: {valueName}");
-                Console.WriteLine($"  NewValue: {newValue}");
-                Console.WriteLine($"  PID: {pid}");
-                Console.WriteLine($"  Process: {proc}");
-                Console.WriteLine($"  OperationType: {operationType}");
-                Console.WriteLine($"  AccessMask: {accessMaskRaw} ({accessMaskText})");
-                Console.WriteLine($"  InferredAction: {inferredAction}");
-                Console.WriteLine();
-            }
-        }
+        // Let RegistryWatcher deliver events to subscribers.
+        // Keep the main thread alive while background threads do the work.
+        Thread.Sleep(Timeout.Infinite);
 
         void PrintMonitorRegistry()
         {
@@ -112,6 +106,8 @@ class Program
             {
                 while (true)
                 {
+                    PrintHelp();
+
                     var key = Console.ReadKey(true).Key; // blocks here, not main thread
 
                     if (key == ConsoleKey.Escape)
@@ -129,8 +125,6 @@ class Program
                         Program.DumpXml = !Program.DumpXml;
                         Console.WriteLine($"Dump XML: {Program.DumpXml}");
                     }
-
-                    PrintHelp();
                 }
             });
 

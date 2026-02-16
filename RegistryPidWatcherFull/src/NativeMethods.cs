@@ -4,8 +4,9 @@ using System;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 
+// unsafe override to allow the generated interop layer to use pointers internally.
+
 [SupportedOSPlatform("windows")]
-// allows the generated interop layer to use pointers internally.
 internal static partial class NativeMethods
 {
     public const int KEY_NOTIFY = 0x0010;
@@ -14,6 +15,9 @@ internal static partial class NativeMethods
 
     public static readonly UIntPtr HKEY_LOCAL_MACHINE = 0x80000002u;
     public static readonly UIntPtr HKEY_CURRENT_USER = 0x80000001u;
+
+    public const uint WAIT_OBJECT_0 = 0x00000000u;
+    public const uint INFINITE = 0xFFFFFFFFu;
 
     // -----------------------------
     // Registry APIs
@@ -64,4 +68,10 @@ internal static partial class NativeMethods
         SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     public static partial bool ResetEvent(IntPtr hEvent);
+
+    [LibraryImport("kernel32.dll",
+        EntryPoint = "WaitForSingleObject",
+        SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.U4)]
+    public static partial uint WaitForSingleObject(nint hHandle, uint dwMilliseconds);
 }
