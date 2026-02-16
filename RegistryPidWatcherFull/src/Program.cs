@@ -112,6 +112,9 @@ class Program
 
                     if (key == ConsoleKey.Escape)
                     {
+                        hkcuSubscription.Dispose();
+                        hklmSubscription.Dispose();
+
                         Console.WriteLine("Exiting...");
                         Environment.Exit(0);
                     }
