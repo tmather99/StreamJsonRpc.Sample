@@ -115,6 +115,9 @@ class Program
                         hkcuSubscription.Dispose();
                         hklmSubscription.Dispose();
 
+                        hkcuWatcher.Dispose();
+                        hklmWatcher.Dispose();
+
                         Console.WriteLine("Exiting...");
                         Environment.Exit(0);
                     }
